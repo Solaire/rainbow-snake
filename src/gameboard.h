@@ -13,6 +13,14 @@ enum Celltype
 
 typedef enum Celltype Celltype;
 
+struct Point
+{
+    unsigned short x;
+    unsigned short y;
+};
+
+typedef struct Point Point;
+
 struct GameBoard
 {
     unsigned short width;
@@ -29,5 +37,6 @@ void GameBoardDraw(GameBoard * pGameBoard, SDL_Renderer * pRenderer);
 char GameBoardIsValidTile(GameBoard * pGameBoard, const unsigned short x, const unsigned short y);
 void GameBoardSetCell(GameBoard * pGameBoard, const unsigned short x, const unsigned short y, const Celltype value);
 char GameBoardIsComplete(GameBoard * pGameBoard);
+void GameBoardGetFree(GameBoard * pGameboard, const unsigned short snakeLen, Point ** ppPointArr, unsigned short * pLength);
 
 #endif // !GAME_BOARD_H

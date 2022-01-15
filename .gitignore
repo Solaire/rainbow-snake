@@ -52,3 +52,5 @@ Mkfile.old
 dkms.conf
 
 *.vscode/
+.lite_workspace.lua
+bin/

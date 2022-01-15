@@ -1,0 +1,21 @@
+# depslib dependency file v1.0
+1641758197 source:/home/kacper/dev/RainbowSnake/src/gameboard.c
+	"gameboard.h"
+
+1641850062 /home/kacper/dev/RainbowSnake/src/gameboard.h
+	"SDL2/SDL.h"
+
+1642188579 source:/home/kacper/dev/RainbowSnake/src/main.c
+	<stdio.h>
+	<stdlib.h>
+	<time.h>
+	<SDL2/SDL.h>
+	"gameboard.h"
+	"snake.h"
+
+1642187515 /home/kacper/dev/RainbowSnake/src/snake.h
+	"gameboard.h"
+
+1642188898 source:/home/kacper/dev/RainbowSnake/src/snake.c
+	"snake.h"
+

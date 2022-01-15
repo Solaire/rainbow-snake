@@ -63,7 +63,7 @@ void GameBoardDraw(GameBoard * pGameBoard, SDL_Renderer * pRenderer)
 // Otherwise return 0
 char GameBoardIsValidTile(GameBoard * pGameBoard, const unsigned short x, const unsigned short y)
 {
-    if(x >= 0 && x < pGameBoard->width && y >= 0 && y < pGameBoard->height)
+    if(x < pGameBoard->width && y < pGameBoard->height)
     {
         return (pGameBoard->cells[x + y * pGameBoard->width] == (unsigned char)cTypeFree);
     }
@@ -73,7 +73,7 @@ char GameBoardIsValidTile(GameBoard * pGameBoard, const unsigned short x, const 
 // Set the cell at position to specified value
 void GameBoardSetCell(GameBoard * pGameBoard, const unsigned short x, const unsigned short y, const Celltype value)
 {
-    if(x >= 0 && x < pGameBoard->width && y >= 0 && y < pGameBoard->height)
+    if(x < pGameBoard->width && y < pGameBoard->height)
     {
         pGameBoard->cells[x + y * pGameBoard->width] = (unsigned char)value;
     }
@@ -92,4 +92,36 @@ char GameBoardIsComplete(GameBoard * pGameBoard)
         }
     }
     return count == (pGameBoard->width * pGameBoard->height);
+}
+
+void GameBoardGetFree(GameBoard * pGameBoard, const unsigned short snakeLen, Point ** ppPointArr, unsigned short * pLength)
+{
+    if(*ppPointArr != NULL)
+    {
+        free(ppPointArr);
+    }
+
+    const unsigned int initLength = (pGameBoard->width * pGameBoard->height) - snakeLen;
+    Point * pPoints = (Point *)malloc(initLength * sizeof(Point));
+
+    unsigned int i = 0;
+    for(unsigned int x = 0; x < pGameBoard->width; x++)
+    {
+        for(unsigned int y = 0; y < pGameBoard->height; y++)
+        {
+            const unsigned short index = (x + y * pGameBoard->width);
+            if(pGameBoard->cells[index] == (unsigned char)cTypeFree)
+            {
+                pPoints[i].x = x;
+                pPoints[i].y = y;
+                i++;
+            }
+        }
+    }
+    if(i < initLength)
+    {
+        //pPoints = realloc(pPoints, i * sizeof(Point)); // Shrink to fit the actual number of free cells.
+    }
+    *pLength = i;
+    *ppPointArr = pPoints;
 }

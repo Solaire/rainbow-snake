@@ -4,52 +4,45 @@
 #include <SDL2/SDL.h>
 
 #include "gameboard.h"
+#include "snake.h"
 
 #define WINDOW_WIDTH  800
 #define WINDOW_HEIGHT 800
 #define CELL_SIZE	  8
 
-/*
-typedef struct Point
+char GenerateNewFood(GameBoard * board)
 {
-    unsigned short x;
-    unsigned short y;
-} Point;
-
-typedef struct RGB
-{
-    unsigned char r;
-    unsigned char g;
-    unsigned char b;
-} RGB;
-
-typedef struct SnakePart
-{
-    Point point;
-    RGB rgb;
-} SnakePart;
-
-typedef struct Snake
-{
+    Point * pFreePoints = NULL;
     unsigned short length = 0;
-    Point ** pointMap = NULL;
-    SnakePart * snakeParts = NULL;
-} Snake;
+    GameBoardGetFree(board, 0, &pFreePoints, &length);
+    if(length == 0)
+    {
+        return 0;
+    }
 
-void SnakeInit(Snake * pSnake, const unsigned short length)
-{
-    pSnake->length = length;
-    pSnake->pointMap = (Point **)malloc(length * sizeof(Point *));
-    pSnake->snakeParts = (SnakePart *)malloc(length * sizeof(SnakePart));
+    if(length == 1)
+    {
+        GameBoardSetCell(board, pFreePoints[0].x, pFreePoints[0].y, cTypeFood);
+    }
+    else
+    {
+        const Point point = pFreePoints[rand() % length];
+        GameBoardSetCell(board, point.x, point.y, cTypeFood);
+    }
+
+    if(pFreePoints != NULL)
+    {
+        free(pFreePoints);
+    }
+    return 1;
 }
-*/
 
 int main(int argc, char * argv[])
 {
 	SDL_Window * pWindow = NULL;
 	SDL_Surface * pSurface = NULL;
 	SDL_Renderer * pRenderer = NULL;
-	
+
 	// SDL setup
     if(SDL_CreateWindowAndRenderer(WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN, &pWindow, &pRenderer) != 0)
     {
@@ -60,14 +53,20 @@ int main(int argc, char * argv[])
     {
         return -2;
     }
-	
+
 	// Seed the rng
 	time_t t;
 	srand((unsigned) time(&t));
-	
+
     // Create the game board
     GameBoard board;
     GameBoardInit(&board, 100, 100, CELL_SIZE);
+
+    Point initPoint;
+    initPoint.x = 50;
+    initPoint.y = 50;
+    Snake snake;
+    SnakeInit(&snake, 100 * 100, initPoint);
 
     char running = 1;
     while(running)
@@ -76,40 +75,56 @@ int main(int argc, char * argv[])
         SDL_SetRenderDrawColor(pRenderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
         SDL_RenderClear(pRenderer);
 
+        char isNewFood = 0;
+        if(isNewFood)
+        {
+            running = GenerateNewFood(&board);
+        }
+
         // Check events to resolve exit and to keep app responsive
+        const unsigned char * pKeys = SDL_GetKeyboardState(NULL);
         SDL_Event e;
         while(SDL_PollEvent(&e) != 0)
         {
-            if(e.type == SDL_QUIT)
+            if(e.type == SDL_QUIT || pKeys[SDL_SCANCODE_ESCAPE])
             {
-                running = 0;
-            }
-        }
-
-        unsigned short x = rand() % 100;
-        unsigned short y = rand() % 100;
-        unsigned short retryCount = 0;
-        while(!GameBoardIsValidTile(&board, x, y))
-        {
-            if(GameBoardIsComplete(&board))
-            {
-                printf("Game Over!\n");
                 running = 0;
                 break;
             }
-            retryCount++;
-            x = rand() % 100;
-            y = rand() % 100;
+            else if(pKeys[SDL_SCANCODE_UP])
+            {
+                SnakeChangeDirection(&snake, cDirectionUp);
+                break;
+            }
+            else if(pKeys[SDL_SCANCODE_DOWN])
+            {
+                SnakeChangeDirection(&snake, cDirectionDown);
+                break;
+            }
+            else if(pKeys[SDL_SCANCODE_LEFT])
+            {
+                SnakeChangeDirection(&snake, cDirectionLeft);
+                break;
+            }
+            else if(pKeys[SDL_SCANCODE_RIGHT])
+            {
+                SnakeChangeDirection(&snake, cDirectionRight);
+                break;
+            }
         }
-        printf("%d\n", retryCount);
 
-        GameBoardSetCell(&board, x, y, cTypeFood);
+        // Update
+        SnakeMove(&snake);
+
+        // Draw
+        SnakeDraw(&snake, pRenderer, board.cellsize);
         GameBoardDraw(&board, pRenderer);
 
         // Render
         SDL_RenderPresent(pRenderer);
-        SDL_Delay((1.0 / 120.0) * 1000);
+        SDL_Delay((1.0 / 1.0) * 1000);
     }
+    printf("Game over!\n");
 
     // Cleanup
 	GameBoardFree(&board);

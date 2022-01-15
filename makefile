@@ -1,4 +1,4 @@
-OBJS = src/gameboard.h src/gameboard.c src/main.c
+OBJS = src/snake.c src/gameboard.c src/main.c
 
 CC = gcc
 
