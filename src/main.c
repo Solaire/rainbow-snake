@@ -66,7 +66,7 @@ int main(int argc, char * argv[])
     initPoint.x = 50;
     initPoint.y = 50;
     Snake snake;
-    SnakeInit(&snake, 100 * 100, initPoint);
+    SnakeInit(&snake, initPoint);
 
     char running = 1;
     while(running)

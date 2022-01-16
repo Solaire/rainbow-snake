@@ -5,7 +5,7 @@
 1641850062 /home/kacper/dev/RainbowSnake/src/gameboard.h
 	"SDL2/SDL.h"
 
-1642188579 source:/home/kacper/dev/RainbowSnake/src/main.c
+1642265223 source:/home/kacper/dev/RainbowSnake/src/main.c
 	<stdio.h>
 	<stdlib.h>
 	<time.h>
@@ -13,9 +13,9 @@
 	"gameboard.h"
 	"snake.h"
 
-1642187515 /home/kacper/dev/RainbowSnake/src/snake.h
+1642264839 /home/kacper/dev/RainbowSnake/src/snake.h
 	"gameboard.h"
 
-1642188898 source:/home/kacper/dev/RainbowSnake/src/snake.c
+1642265740 source:/home/kacper/dev/RainbowSnake/src/snake.c
 	"snake.h"
 

@@ -3,6 +3,7 @@
 
 #include "gameboard.h"
 
+// Direction enum for the snake
 enum Direction
 {
     cDirectionNone = -1,
@@ -11,9 +12,9 @@ enum Direction
     cDirectionLeft = 3,
     cDirectionRight = 4
 };
-
 typedef enum Direction Direction;
 
+// Structure representing RGB colour
 struct RGB
 {
     unsigned char r;
@@ -22,28 +23,41 @@ struct RGB
 };
 typedef struct RGB RGB;
 
+// Structure representing a single snake cell
+// This structure is a doubly-linked list
 struct SnakePart
 {
     Point point;
-    struct SnakePart * pPrev;
-    struct SnakePart * pNext;
+    struct SnakePart * prev;
+    struct SnakePart * next;
 };
 typedef struct SnakePart SnakePart;
 
+// Lower-level functions for adding/removing snake cells
+static SnakePart * SnakePartPushHead(SnakePart * head, const Point point);
+static SnakePart * SnakePartPushTail(SnakePart * tail, const Point point);
+static SnakePart * SnakePartPopHead(SnakePart * head);
+static SnakePart * SnakePartPopTail(SnakePart * tail);
+static unsigned short SnakePartLength(SnakePart * head);
+static void SnakePartFree(SnakePart * head);
+
+// Main snake structure
+// Contains the length, direction
+// colour array and the
+// pointers to head and tail cells
 struct Snake
 {
-    unsigned short finalLength;
-    unsigned short currentLength;
+    unsigned short length;
     Direction dir;
     RGB * colours;
 
-    SnakePart * pHead;
-    SnakePart * pTail;
+    SnakePart * head;
+    SnakePart * tail;
 };
-
 typedef struct Snake Snake;
 
-void SnakeInit(Snake * pSnake, const unsigned short finalLength, const Point initPoint);
+// Higher-level functions for managing the snake structure
+void SnakeInit(Snake * pSnake, const Point initPoint);
 void SnakeFree(Snake * pSnake);
 void SnakeMove(Snake * pSnake);
 void SnakeChangeDirection(Snake * pSnake, const Direction newDirection);
