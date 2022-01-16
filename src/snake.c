@@ -116,7 +116,7 @@ void SnakeInit(Snake * pSnake, const Point initPoint)
     pSnake->dir = cDirectionNone;
     pSnake->colours = (RGB *)calloc(10000, sizeof(RGB));
     pSnake->length = 1;
-    pSnake->speed = 2;
+    pSnake->speed = 5;
 
     pSnake->tail = NULL;
     pSnake->head = NULL;
@@ -189,6 +189,25 @@ void SnakeMove(Snake * pSnake)
             newHeadPos.x++;
             break;
     }
+
+    if(newHeadPos.x < 0)
+    {
+        newHeadPos.x = 24;
+    }
+    else if(newHeadPos.x > 24)
+    {
+        newHeadPos.x = 0;
+    }
+
+    if(newHeadPos.y < 0)
+    {
+        newHeadPos.y = 24;
+    }
+    else if(newHeadPos.y > 24)
+    {
+        newHeadPos.y = 0;
+    }
+
     SnakePartPushHead(&pSnake->head, &pSnake->tail, newHeadPos);
 }
 
@@ -202,12 +221,12 @@ void SnakeChangeDirection(Snake * pSnake, const Direction newDirection)
     }
 }
 
-void SnakeGetNextPos(Snake * pSnake, unsigned short * nx, unsigned short * ny)
+void SnakeGetNextPos(Snake * pSnake, short * nx, short * ny)
 {
     if(SnakePartIsEmpty(pSnake->head))
     {
-        *nx = 0;
-        *ny = 0;
+        *nx = -1;
+        *ny = -1;
         return;
     }
     Point newHeadPos = pSnake->head->point;

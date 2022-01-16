@@ -19,16 +19,19 @@ char GenerateNewFood(GameBoard * board)
     if(length == 0)
     {
         return 0;
+        printf("No free cells available\n");
     }
 
     if(length == 1)
     {
         GameBoardSetCell(board, pFreePoints[0].x, pFreePoints[0].y, cTypeFood);
+        printf("New food point: (%d, %d)\n", pFreePoints[0].x, pFreePoints[0].y);
     }
     else
     {
         const Point point = pFreePoints[rand() % length];
         GameBoardSetCell(board, point.x, point.y, cTypeFood);
+        printf("New food point: (%d, %d)\n", point.x, point.y);
     }
 
     if(pFreePoints != NULL)
@@ -140,23 +143,25 @@ int main(int argc, char * argv[])
 
         if(elapsed > (1.0 / snake.speed) * 1000)
         {
+            GameBoardSetCell(&board, snake.tail->point.x, snake.tail->point.y, cTypeFree);
+
             // Update
             SnakeMove(&snake);
             elapsed = 0.0;
 
-            unsigned short newX, newY = 0;
-            SnakeGetNextPos(&snake, &newX, &newY);
-            Celltype cell = GameBoardGetCell(&board, newX, newY);
-            if(cell == cTypeSnake)
+            Celltype cell = GameBoardGetCell(&board, snake.head->point.x, snake.head->point.y);
+            if(cell == cTypeFood)
+            {
+                SnakeAddBodyPart(&snake);
+                isNewFood = 1;
+            }
+            else if(cell == cTypeSnake)
             {
                 gameOver = 1;
+                printf("Game over!\n");
             }
-            else if(cell == cTypeFood)
-            {
-                isNewFood = 1;
-                GameBoardSetCell(&board, newX, newY, cTypeFree);
-                SnakeAddBodyPart(&snake);
-            }
+
+            GameBoardSetCell(&board, snake.head->point.x, snake.head->point.y, cTypeSnake);
         }
 
         if(isNewFood)
@@ -174,7 +179,7 @@ int main(int argc, char * argv[])
         SDL_RenderPresent(pRenderer);
         SDL_Delay((1.0 / FPS) * 1000);
     }
-    printf("Game over!\n");
+    printf("Finished!\n");
 
     // Cleanup
 	GameBoardFree(&board);

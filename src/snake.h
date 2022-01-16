@@ -62,7 +62,7 @@ void SnakeInit(Snake * pSnake, const Point initPoint);
 void SnakeFree(Snake * pSnake);
 void SnakeMove(Snake * pSnake);
 void SnakeChangeDirection(Snake * pSnake, const Direction newDirection);
-void SnakeGetNextPos(Snake * pSnake, unsigned short * nx, unsigned short * ny);
+void SnakeGetNextPos(Snake * pSnake, short * nx, short * ny);
 void SnakeAddBodyPart(Snake * pSnake);
 void SnakeRemoveBodyPart(Snake * pSnake);
 void SnakeDraw(Snake * pSnake, SDL_Renderer * pRenderer, const unsigned short cellsize);

@@ -1,5 +1,10 @@
 #include "gameboard.h"
 
+static short ToIndex(const short x, const short y, const short width)
+{
+    return (y * width) + x;
+}
+
 // Initialise board width, height and cellsize
 // Initialise the cell array and set all cells to free
 void GameBoardInit(GameBoard * pGameBoard, const unsigned short width, const unsigned short height, const unsigned short cellsize)
@@ -32,22 +37,26 @@ void GameBoardDraw(GameBoard * pGameBoard, SDL_Renderer * pRenderer)
     {
         for(int y = 0; y < pGameBoard->height; y++)
         {
-            const unsigned short index = x + y * pGameBoard->width;
+            const unsigned short index = ToIndex(x, y, pGameBoard->width);
             switch(pGameBoard->cells[index])
             {
                 case (int)cTypeWall:
                     SDL_SetRenderDrawColor(pRenderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
                     break;
+                /*
                 case (int)cTypeSnake:
                     SDL_SetRenderDrawColor(pRenderer, 0, 255, 0, SDL_ALPHA_OPAQUE);
                     break;
+                */
                 case (int)cTypeFood:
                     SDL_SetRenderDrawColor(pRenderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
                     break;
+                /*
                 case (int)cTypeFree:
                 default:
                     SDL_SetRenderDrawColor(pRenderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
                     break;
+                */
             }
             SDL_Rect r;
             r.w = pGameBoard->cellsize;
@@ -61,29 +70,32 @@ void GameBoardDraw(GameBoard * pGameBoard, SDL_Renderer * pRenderer)
 
 // Return 1 if the cell at specified position is free
 // Otherwise return 0
-char GameBoardIsValidTile(GameBoard * pGameBoard, const unsigned short x, const unsigned short y)
+char GameBoardIsValidTile(GameBoard * pGameBoard, const short x, const short y)
 {
-    if(x < pGameBoard->width && y < pGameBoard->height)
+    if(x >= 0 && x < pGameBoard->width && y >= 0 && y < pGameBoard->height)
     {
-        return (pGameBoard->cells[x + y * pGameBoard->width] == (unsigned char)cTypeFree);
+        const short index = ToIndex(x, y, pGameBoard->width);
+        return (pGameBoard->cells[index] == (unsigned char)cTypeFree);
     }
     return 0;
 }
 
 // Set the cell at position to specified value
-void GameBoardSetCell(GameBoard * pGameBoard, const unsigned short x, const unsigned short y, const Celltype value)
+void GameBoardSetCell(GameBoard * pGameBoard, const short x, const short y, const Celltype value)
 {
-    if(x < pGameBoard->width && y < pGameBoard->height)
+    if(x >= 0 && x < pGameBoard->width && y >= 0 && y < pGameBoard->height)
     {
-        pGameBoard->cells[x + y * pGameBoard->width] = (unsigned char)value;
+        const short index = ToIndex(x, y, pGameBoard->width);
+        pGameBoard->cells[index] = (unsigned char)value;
     }
 }
 
-Celltype GameBoardGetCell(GameBoard * pGameBoard, const unsigned short x, const unsigned short y)
+Celltype GameBoardGetCell(GameBoard * pGameBoard, const short x, const short y)
 {
-    if(x < pGameBoard->width && y < pGameBoard->height)
+    if(x >= 0 && x < pGameBoard->width && y >= 0 && y < pGameBoard->height)
     {
-        return pGameBoard->cells[x + y * pGameBoard->width];
+        const short index = ToIndex(x, y, pGameBoard->width);
+        return pGameBoard->cells[index];
     }
 }
 
@@ -113,11 +125,11 @@ void GameBoardGetFree(GameBoard * pGameBoard, const unsigned short snakeLen, Poi
     Point * pPoints = (Point *)malloc(initLength * sizeof(Point));
 
     unsigned int i = 0;
-    for(unsigned int x = 0; x < pGameBoard->width; x++)
+    for(int x = 0; x < pGameBoard->width; x++)
     {
-        for(unsigned int y = 0; y < pGameBoard->height; y++)
+        for(int y = 0; y < pGameBoard->height; y++)
         {
-            const unsigned short index = (x + y * pGameBoard->width);
+            const short index = ToIndex(x, y, pGameBoard->width);
             if(pGameBoard->cells[index] == (unsigned char)cTypeFree)
             {
                 pPoints[i].x = x;
@@ -125,10 +137,6 @@ void GameBoardGetFree(GameBoard * pGameBoard, const unsigned short snakeLen, Poi
                 i++;
             }
         }
-    }
-    if(i < initLength)
-    {
-        //pPoints = realloc(pPoints, i * sizeof(Point)); // Shrink to fit the actual number of free cells.
     }
     *pLength = i;
     *ppPointArr = pPoints;
