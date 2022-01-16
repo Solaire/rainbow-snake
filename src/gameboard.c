@@ -28,7 +28,7 @@ void GameBoardFree(GameBoard * pGameBoard)
 // Draw the board, with each cell having a different colour
 void GameBoardDraw(GameBoard * pGameBoard, SDL_Renderer * pRenderer)
 {
-    for(int x = 0; x < pGameBoard->width; x++)    
+    for(int x = 0; x < pGameBoard->width; x++)
     {
         for(int y = 0; y < pGameBoard->height; y++)
         {
@@ -76,6 +76,14 @@ void GameBoardSetCell(GameBoard * pGameBoard, const unsigned short x, const unsi
     if(x < pGameBoard->width && y < pGameBoard->height)
     {
         pGameBoard->cells[x + y * pGameBoard->width] = (unsigned char)value;
+    }
+}
+
+Celltype GameBoardGetCell(GameBoard * pGameBoard, const unsigned short x, const unsigned short y)
+{
+    if(x < pGameBoard->width && y < pGameBoard->height)
+    {
+        return pGameBoard->cells[x + y * pGameBoard->width];
     }
 }
 

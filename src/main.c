@@ -8,7 +8,8 @@
 
 #define WINDOW_WIDTH  800
 #define WINDOW_HEIGHT 800
-#define CELL_SIZE	  8
+#define CELL_SIZE     32
+#define FPS 60.0
 
 char GenerateNewFood(GameBoard * board)
 {
@@ -60,26 +61,24 @@ int main(int argc, char * argv[])
 
     // Create the game board
     GameBoard board;
-    GameBoardInit(&board, 100, 100, CELL_SIZE);
+    GameBoardInit(&board, 25, 25, CELL_SIZE);
 
     Point initPoint;
-    initPoint.x = 50;
-    initPoint.y = 50;
+    initPoint.x = 10;
+    initPoint.y = 10;
     Snake snake;
     SnakeInit(&snake, initPoint);
 
-    char running = 1;
+    double currentTime = SDL_GetTicks();
+    double elapsed = 0.0;
+
+    char running = GenerateNewFood(&board);
+    char gameOver = 0;
     while(running)
     {
         // Clear screen and set renderer colour to white
         SDL_SetRenderDrawColor(pRenderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
         SDL_RenderClear(pRenderer);
-
-        char isNewFood = 0;
-        if(isNewFood)
-        {
-            running = GenerateNewFood(&board);
-        }
 
         // Check events to resolve exit and to keep app responsive
         const unsigned char * pKeys = SDL_GetKeyboardState(NULL);
@@ -91,38 +90,89 @@ int main(int argc, char * argv[])
                 running = 0;
                 break;
             }
-            else if(pKeys[SDL_SCANCODE_UP])
+            else if(!gameOver)
             {
-                SnakeChangeDirection(&snake, cDirectionUp);
-                break;
-            }
-            else if(pKeys[SDL_SCANCODE_DOWN])
-            {
-                SnakeChangeDirection(&snake, cDirectionDown);
-                break;
-            }
-            else if(pKeys[SDL_SCANCODE_LEFT])
-            {
-                SnakeChangeDirection(&snake, cDirectionLeft);
-                break;
-            }
-            else if(pKeys[SDL_SCANCODE_RIGHT])
-            {
-                SnakeChangeDirection(&snake, cDirectionRight);
-                break;
+                if(pKeys[SDL_SCANCODE_UP])
+                {
+                    SnakeChangeDirection(&snake, cDirectionUp);
+                    break;
+                }
+                else if(pKeys[SDL_SCANCODE_DOWN])
+                {
+                    SnakeChangeDirection(&snake, cDirectionDown);
+                    break;
+                }
+                else if(pKeys[SDL_SCANCODE_LEFT])
+                {
+                    SnakeChangeDirection(&snake, cDirectionLeft);
+                    break;
+                }
+                else if(pKeys[SDL_SCANCODE_RIGHT])
+                {
+                    SnakeChangeDirection(&snake, cDirectionRight);
+                    break;
+                }
+                #define DEBUG
+                #ifdef DEBUG
+                else if(pKeys[SDL_SCANCODE_KP_MINUS])
+                {
+                    SnakeRemoveBodyPart(&snake);
+                    break;
+                }
+                else if(pKeys[SDL_SCANCODE_KP_PLUS])
+                {
+                    SnakeAddBodyPart(&snake);
+                    break;
+                }
+                #endif // DEBUG
             }
         }
 
-        // Update
-        SnakeMove(&snake);
+        if(gameOver)
+        {
+            goto render;
+        }
 
+        char isNewFood = 0;
+        double newTime = SDL_GetTicks();
+        elapsed += newTime - currentTime;
+        currentTime = newTime;
+
+        if(elapsed > (1.0 / snake.speed) * 1000)
+        {
+            // Update
+            SnakeMove(&snake);
+            elapsed = 0.0;
+
+            unsigned short newX, newY = 0;
+            SnakeGetNextPos(&snake, &newX, &newY);
+            Celltype cell = GameBoardGetCell(&board, newX, newY);
+            if(cell == cTypeSnake)
+            {
+                gameOver = 1;
+            }
+            else if(cell == cTypeFood)
+            {
+                isNewFood = 1;
+                GameBoardSetCell(&board, newX, newY, cTypeFree);
+                SnakeAddBodyPart(&snake);
+            }
+        }
+
+        if(isNewFood)
+        {
+            running = GenerateNewFood(&board);
+            isNewFood = 0;
+        }
+
+        render:
         // Draw
-        SnakeDraw(&snake, pRenderer, board.cellsize);
         GameBoardDraw(&board, pRenderer);
+        SnakeDraw(&snake, pRenderer, board.cellsize);
 
         // Render
         SDL_RenderPresent(pRenderer);
-        SDL_Delay((1.0 / 1.0) * 1000);
+        SDL_Delay((1.0 / FPS) * 1000);
     }
     printf("Game over!\n");
 

@@ -19,3 +19,23 @@
 1642265740 source:/home/kacper/dev/RainbowSnake/src/snake.c
 	"snake.h"
 
+1642367951 source:c:\dev\rainbowsnake\src\gameboard.c
+	"gameboard.h"
+
+1642367925 c:\dev\rainbowsnake\src\gameboard.h
+	"SDL2/SDL.h"
+
+1642368711 source:c:\dev\rainbowsnake\src\snake.c
+	"snake.h"
+
+1642368334 c:\dev\rainbowsnake\src\snake.h
+	"gameboard.h"
+
+1642368697 source:c:\dev\rainbowsnake\src\main.c
+	<stdio.h>
+	<stdlib.h>
+	<time.h>
+	<SDL2/SDL.h>
+	"gameboard.h"
+	"snake.h"
+

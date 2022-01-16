@@ -36,6 +36,7 @@ void GameBoardFree(GameBoard * pGameBoard);
 void GameBoardDraw(GameBoard * pGameBoard, SDL_Renderer * pRenderer);
 char GameBoardIsValidTile(GameBoard * pGameBoard, const unsigned short x, const unsigned short y);
 void GameBoardSetCell(GameBoard * pGameBoard, const unsigned short x, const unsigned short y, const Celltype value);
+Celltype GameBoardGetCell(GameBoard * pGameBoard, const unsigned short x, const unsigned short y);
 char GameBoardIsComplete(GameBoard * pGameBoard);
 void GameBoardGetFree(GameBoard * pGameboard, const unsigned short snakeLen, Point ** ppPointArr, unsigned short * pLength);
 

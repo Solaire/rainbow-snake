@@ -1,49 +1,82 @@
 #include "snake.h"
 
-static SnakePart * SnakePartPushHead(SnakePart * head, const Point point)
+#define MAX( a, b ) ( ( a > b) ? a : b )
+#define MIN( a, b ) ( ( a < b) ? a : b )
+
+// Add new snake part to the front of the linked list
+static void SnakePartPushHead(SnakePart ** head, SnakePart ** tail, const Point point)
 {
-    SnakePart * newHead = (SnakePart*)malloc(sizeof(SnakePart));
+    SnakePart * newHead = (SnakePart*)calloc(1, sizeof(SnakePart));
     newHead->point = point;
-    newHead->prev = NULL;
 
-    head->prev = newHead;
-    newHead->next = head;
-    return newHead;
+    if(SnakePartIsEmpty(*head))
+    {
+        *tail = newHead;
+    }
+    else
+    {
+        (*head)->prev = newHead;
+    }
+    newHead->next = *head;
+    *head = newHead;
 }
 
-static SnakePart * SnakePartPushTail(SnakePart * tail, const Point point)
+// Add new snake part to the end of the linked list
+static void SnakePartPushTail(SnakePart ** head, SnakePart ** tail, const Point point)
 {
-    SnakePart * newTail = (SnakePart *)malloc(sizeof(SnakePart));
+    SnakePart * newTail = (SnakePart *)calloc(1, sizeof(SnakePart));
     newTail->point = point;
-    newTail->next = NULL;
 
-    tail->next = newTail;
-    newTail->prev = tail;
-    return newTail;
-}
-
-static SnakePart * SnakePartPopHead(SnakePart * head)
-{
-    SnakePart * tmp = head;
-    if(head->next != NULL)
+    if(SnakePartIsEmpty(*head))
     {
-        head->next->prev = NULL;
+        *tail = NULL;
     }
-    head = head->next;
-    return tmp;
-}
-
-static SnakePart * SnakePartPopTail(SnakePart * tail)
-{
-    SnakePart * tmp = tail;
-    if(tail->prev != NULL)
+    else
     {
-        tail->prev->next = NULL;
+        (*tail)->next = newTail;
+        newTail->prev = *tail;
     }
-    tail = tail->prev;
-    return tmp;
+    *tail = newTail;
 }
 
+// Remove the first entry in the SnakePart linked list
+// Return pointer to the old head
+// NOTE: The pointer must be freed manually
+static SnakePart * SnakePartPopHead(SnakePart ** head, SnakePart ** tail)
+{
+    SnakePart * ret = *head;
+    if((*head)->next == NULL)
+    {
+        *tail = NULL;
+    }
+    else
+    {
+        (*head)->next->prev = NULL;
+    }
+    *head = (*head)->next;
+    return ret;
+}
+
+// Remove the last entry in the SnakePart linked list
+// Return pointer to the old tail
+// NOTE: The pointer must be freed manually
+static SnakePart * SnakePartPopTail(SnakePart ** head, SnakePart ** tail)
+{
+    SnakePart * ret = *tail;
+    if((*head)->next == NULL)
+    {
+        *head = NULL;
+    }
+    else
+    {
+        (*tail)->prev->next = NULL;
+    }
+    *tail = (*tail)->prev;
+    return ret;
+}
+
+// Iterate the SnakePart linked list, starting at front
+// and return the number of nodes
 static unsigned short SnakePartLength(SnakePart * head)
 {
     unsigned short length = 0;
@@ -55,6 +88,8 @@ static unsigned short SnakePartLength(SnakePart * head)
     return length;
 }
 
+// Iterate linked list, starting at front
+// and free all nodes
 static void SnakePartFree(SnakePart * head)
 {
     SnakePart * current = NULL;
@@ -67,55 +102,42 @@ static void SnakePartFree(SnakePart * head)
     }
 }
 
+// Check if SnakePart linked list is empty
+static char SnakePartIsEmpty(SnakePart * head)
+{
+    return head == NULL;
+}
+
 // Initialise snake object
 // Reserve memory for all parts and colours up front
 void SnakeInit(Snake * pSnake, const Point initPoint)
 {
     pSnake->length = 0;
     pSnake->dir = cDirectionNone;
-    pSnake->colours = (RGB *)calloc(100, sizeof(RGB));
+    pSnake->colours = (RGB *)calloc(10000, sizeof(RGB));
+    pSnake->length = 1;
+    pSnake->speed = 2;
+
     pSnake->tail = NULL;
     pSnake->head = NULL;
 
     // TEMP
-    for(unsigned short i = 0; i < 100; i++)
+    for(unsigned short i = 0; i < 10000; i++)
     {
         RGB rgb;
-        rgb.r = 255;
-        rgb.g = 0;
+        rgb.r = 0;
+        rgb.g = 255;
         rgb.b = 0;
 
         pSnake->colours[i] = rgb;
     }
-    SnakePart * init = (SnakePart *)malloc(sizeof(SnakePart));
-    init->point = initPoint;
-    init->next = NULL;
-    init->prev = NULL;
-    pSnake->head = init;
-    pSnake->tail = init;
+    SnakePartPushHead(&pSnake->head, &pSnake->tail, initPoint);
 }
 
-// Free all snake memory
+// Free the snake object
 void SnakeFree(Snake * pSnake)
 {
     SnakePartFree(pSnake->head);
-    /*
-    SnakePart * pNode = pSnake->tail;
-    while(pNode)
-    {
-        if(pNode->pNext)
-        {
-            pNode = pNode->pNext;
-            free(pNode->pPrev);
-            pNode->pPrev = NULL;
-        }
-        else
-        {
-            free(pNode);
-            pNode = NULL;
-        }
-    }
-    */
     if(pSnake->colours != NULL)
     {
         free(pSnake->colours);
@@ -127,24 +149,67 @@ void SnakeFree(Snake * pSnake)
 // Move the snake in the desired direction
 void SnakeMove(Snake * pSnake)
 {
-    /*
-    // We should be able to get away with using a circular
-    // buffer to remove the tail and set new head position
-    pSnake->parts[pSnake->tail++] = NULL;
-    Point newHeadPos = pSnake->parts[pSnake->head++];
-    */
-
-    /*
-    if(pSnake->pTail != pSnake->pHead)
+    // No movement, return early
+    if(pSnake->dir == cDirectionNone)
     {
-        free(pSnake->pTail);
-        pSnake->pTail = NULL;
+        return;
     }
-    */
 
-    SnakePart * tail = SnakePartPopTail(pSnake->tail);
-    free(tail);
+    // Remove the tail
+    // Set the new head position based on movement, and add new head
+    SnakePart * oldTail = SnakePartPopTail(&pSnake->head, &pSnake->tail);
+    Point newHeadPos;
+    if(!SnakePartIsEmpty(pSnake->head))
+    {
+        newHeadPos = pSnake->head->point;
+    }
+    else
+    {
+        newHeadPos = oldTail->point;
+    }
+    free(oldTail);
+    oldTail = NULL;
 
+    // Determine new snake head based on movement
+    switch(pSnake->dir)
+    {
+        case cDirectionUp:
+            newHeadPos.y--;
+            break;
+
+        case cDirectionDown:
+            newHeadPos.y++;
+            break;
+
+        case cDirectionLeft:
+            newHeadPos.x--;
+            break;
+
+        case cDirectionRight:
+            newHeadPos.x++;
+            break;
+    }
+    SnakePartPushHead(&pSnake->head, &pSnake->tail, newHeadPos);
+}
+
+// Change the snake's direction
+void SnakeChangeDirection(Snake * pSnake, const Direction newDirection)
+{
+    // Only set new direction if not going in opposite direction
+    if(pSnake->dir == cDirectionNone || abs((char)newDirection - (char)pSnake->dir) > 1)
+    {
+        pSnake->dir = newDirection;
+    }
+}
+
+void SnakeGetNextPos(Snake * pSnake, unsigned short * nx, unsigned short * ny)
+{
+    if(SnakePartIsEmpty(pSnake->head))
+    {
+        *nx = 0;
+        *ny = 0;
+        return;
+    }
     Point newHeadPos = pSnake->head->point;
 
     // Determine new snake head based on movement
@@ -165,71 +230,45 @@ void SnakeMove(Snake * pSnake)
         case cDirectionRight:
             newHeadPos.x++;
             break;
-
-        case cDirectionNone:
-        default:
-            return;
     }
-    pSnake->head = SnakePartPushHead(pSnake->head, newHeadPos);
-
-    /*
-    SnakePart * pNewHead = (SnakePart *)calloc(1, sizeof(SnakePart));
-    pNewHead->point = newHeadPos;
-    pNewHead->pPrev = pSnake->pHead;
-    pSnake->pHead->pNext = pNewHead;
-    pSnake->pHead = pNewHead;
-    */
-
-    //pSnake->parts[pSnake->head] = newHeadPos;
-}
-
-// Change the snake's direction
-void SnakeChangeDirection(Snake * pSnake, const Direction newDirection)
-{
-    // Only set new direction if not going in opposite direction
-    if(abs(newDirection - pSnake->dir) > 1)
-    {
-        pSnake->dir = newDirection;
-    }
+    *nx = newHeadPos.x;
+    *ny = newHeadPos.y;
 }
 
 // Add body part to the snake
-void SnakeAddBodyPart(Snake * pSnake, const Point point)
+void SnakeAddBodyPart(Snake * pSnake)
 {
-    SnakePartPushTail(pSnake->tail, point);
-
-    /*
-    SnakePart * pNewTail = (SnakePart *)calloc(1, sizeof(SnakePart));
-    pNewTail->point = point;
-    pNewTail->pNext = pSnake->pTail;
-    if(pSnake->pTail)
+    SnakePartPushTail(&pSnake->head, &pSnake->tail, pSnake->tail->point);
+    pSnake->length++;
+    if(pSnake->length % 5 == 0)
     {
-        pSnake->pTail->pPrev = pNewTail;
+        pSnake->speed = MIN(++pSnake->speed, 30);
     }
-    else
-    {
-        pSnake->pHead = pNewTail;
-    }
-    pSnake->pTail = pNewTail;
-    */
+}
 
-    /*
-    Point p;
-    p.x = pSnake->parts[pSnake->head].x;
-    p.y = pSnake->parts[pSnake->head].y;
-    pSnake->parts[--pSnake->tail] = p;
-    */
+void SnakeRemoveBodyPart(Snake * pSnake)
+{
+    if(pSnake->length == 1)
+    {
+        return;
+    }
+    SnakePart * tmp = SnakePartPopHead(&pSnake->head, &pSnake->tail);
+    free(tmp);
+    tmp = NULL;
+    pSnake->length--;
+    if(pSnake->length % 5 == 4)
+    {
+        pSnake->speed = MAX(1, --pSnake->speed);
+    }
 }
 
 // Draw the snake
 void SnakeDraw(Snake * pSnake, SDL_Renderer * pRenderer, const unsigned short cellsize)
 {
     unsigned short iRGB = 0;
-    //for(unsigned short i = 0; i < pSnake->currentLength; i++)
-
-    //SnakePart * pCell = pSnake->head;
-    //while(pCell)
     SnakePart * current = NULL;
+
+    // TEMP
     for(current = pSnake->head; current != NULL; current = current->next)
     {
         SDL_Rect r;
@@ -241,6 +280,6 @@ void SnakeDraw(Snake * pSnake, SDL_Renderer * pRenderer, const unsigned short ce
         #define MAKE_RGB(rgb) rgb.r, rgb.g, rgb.b
         SDL_SetRenderDrawColor(pRenderer, MAKE_RGB(pSnake->colours[iRGB]), SDL_ALPHA_OPAQUE);
         SDL_RenderFillRect(pRenderer, &r);
-        //pCell = pCell->pPrev;
+        iRGB++;
     }
 }

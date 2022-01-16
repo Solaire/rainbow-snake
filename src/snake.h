@@ -34,22 +34,23 @@ struct SnakePart
 typedef struct SnakePart SnakePart;
 
 // Lower-level functions for adding/removing snake cells
-static SnakePart * SnakePartPushHead(SnakePart * head, const Point point);
-static SnakePart * SnakePartPushTail(SnakePart * tail, const Point point);
-static SnakePart * SnakePartPopHead(SnakePart * head);
-static SnakePart * SnakePartPopTail(SnakePart * tail);
+static void SnakePartPushHead(SnakePart ** head, SnakePart ** tail, const Point point);
+static void SnakePartPushTail(SnakePart ** head, SnakePart ** tail, const Point point);
+static SnakePart * SnakePartPopHead(SnakePart ** head, SnakePart ** tail);
+static SnakePart * SnakePartPopTail(SnakePart ** head, SnakePart ** tail);
 static unsigned short SnakePartLength(SnakePart * head);
 static void SnakePartFree(SnakePart * head);
+static char SnakePartIsEmpty(SnakePart * head);
 
 // Main snake structure
 // Contains the length, direction
-// colour array and the
-// pointers to head and tail cells
+// colour array and the pointers to head and tail cells
 struct Snake
 {
     unsigned short length;
     Direction dir;
     RGB * colours;
+    short speed;
 
     SnakePart * head;
     SnakePart * tail;
@@ -61,7 +62,9 @@ void SnakeInit(Snake * pSnake, const Point initPoint);
 void SnakeFree(Snake * pSnake);
 void SnakeMove(Snake * pSnake);
 void SnakeChangeDirection(Snake * pSnake, const Direction newDirection);
-void SnakeAddBodyPart(Snake * pSnake, const Point point);
+void SnakeGetNextPos(Snake * pSnake, unsigned short * nx, unsigned short * ny);
+void SnakeAddBodyPart(Snake * pSnake);
+void SnakeRemoveBodyPart(Snake * pSnake);
 void SnakeDraw(Snake * pSnake, SDL_Renderer * pRenderer, const unsigned short cellsize);
 
 #endif // !SNAKE_H
