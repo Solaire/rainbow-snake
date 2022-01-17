@@ -8,7 +8,7 @@
 
 #define WINDOW_WIDTH  800
 #define WINDOW_HEIGHT 800
-#define CELL_SIZE     32
+#define CELL_SIZE     160
 #define FPS 60.0
 
 char GenerateNewFood(GameBoard * board)
@@ -25,7 +25,7 @@ char GenerateNewFood(GameBoard * board)
     if(length == 1)
     {
         GameBoardSetCell(board, pFreePoints[0].x, pFreePoints[0].y, cTypeFood);
-        printf("New food point: (%d, %d)\n", pFreePoints[0].x, pFreePoints[0].y);
+        printf("Last food point: (%d, %d)\n", pFreePoints[0].x, pFreePoints[0].y);
     }
     else
     {
@@ -64,11 +64,11 @@ int main(int argc, char * argv[])
 
     // Create the game board
     GameBoard board;
-    GameBoardInit(&board, 25, 25, CELL_SIZE);
+    GameBoardInit(&board, WINDOW_WIDTH / CELL_SIZE, WINDOW_HEIGHT / CELL_SIZE, CELL_SIZE);
 
     Point initPoint;
-    initPoint.x = 10;
-    initPoint.y = 10;
+    initPoint.x = (WINDOW_WIDTH / CELL_SIZE) / 2;
+    initPoint.y = (WINDOW_HEIGHT / CELL_SIZE) / 2;
     Snake snake;
     SnakeInit(&snake, initPoint);
 

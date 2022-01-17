@@ -43,20 +43,22 @@ void GameBoardDraw(GameBoard * pGameBoard, SDL_Renderer * pRenderer)
                 case (int)cTypeWall:
                     SDL_SetRenderDrawColor(pRenderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
                     break;
-                /*
+                #ifndef _DEBUG
+                #define _DEBUG
+                #endif // !DEBUG
+
+                #ifdef DEBUG
                 case (int)cTypeSnake:
                     SDL_SetRenderDrawColor(pRenderer, 0, 255, 0, SDL_ALPHA_OPAQUE);
                     break;
-                */
+                #endif // DEBUG
                 case (int)cTypeFood:
-                    SDL_SetRenderDrawColor(pRenderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
+                    SDL_SetRenderDrawColor(pRenderer, 155, 155, 155, SDL_ALPHA_OPAQUE);
                     break;
-                /*
                 case (int)cTypeFree:
                 default:
                     SDL_SetRenderDrawColor(pRenderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
                     break;
-                */
             }
             SDL_Rect r;
             r.w = pGameBoard->cellsize;

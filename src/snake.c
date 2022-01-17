@@ -3,6 +3,8 @@
 #define MAX( a, b ) ( ( a > b) ? a : b )
 #define MIN( a, b ) ( ( a < b) ? a : b )
 
+#define COLOUR_COUNT 150
+
 // Add new snake part to the front of the linked list
 static void SnakePartPushHead(SnakePart ** head, SnakePart ** tail, const Point point)
 {
@@ -114,21 +116,61 @@ void SnakeInit(Snake * pSnake, const Point initPoint)
 {
     pSnake->length = 0;
     pSnake->dir = cDirectionNone;
-    pSnake->colours = (RGB *)calloc(10000, sizeof(RGB));
+    pSnake->colours = (RGB *)calloc(COLOUR_COUNT, sizeof(RGB));
     pSnake->length = 1;
-    pSnake->speed = 5;
+    pSnake->speed = 2;
 
     pSnake->tail = NULL;
     pSnake->head = NULL;
 
     // TEMP
-    for(unsigned short i = 0; i < 10000; i++)
+    for(unsigned short i = 0; i < COLOUR_COUNT; i++)
     {
         RGB rgb;
         rgb.r = 0;
-        rgb.g = 255;
+        rgb.g = 0;
         rgb.b = 0;
+        short colourPicker = (i % COLOUR_COUNT) / 25;
+        short mod25 = i % 25;
 
+        switch(colourPicker)
+        {
+        case 0:
+            rgb.r = 255;
+            rgb.g = 10 * mod25;
+            rgb.b = 0;
+            break;
+
+        case 1:
+            rgb.r = 255 - 10 * mod25;
+            rgb.g = 255;
+            rgb.b = 0;
+            break;
+
+        case 2:
+            rgb.r = 0;
+            rgb.g = 255;
+            rgb.b = 10 * mod25;
+            break;
+
+        case 3:
+            rgb.r = 0;
+            rgb.g = 255 - 10 * mod25;
+            rgb.b = 255;
+            break;
+
+        case 4:
+            rgb.r = 10 * mod25;
+            rgb.g = 0;
+            rgb.b = 255;
+            break;
+
+        case 5:
+            rgb.r = 255;
+            rgb.g = 0;
+            rgb.b = 255 - 10 * mod25;
+            break;
+        }
         pSnake->colours[i] = rgb;
     }
     SnakePartPushHead(&pSnake->head, &pSnake->tail, initPoint);
@@ -173,37 +215,37 @@ void SnakeMove(Snake * pSnake)
     // Determine new snake head based on movement
     switch(pSnake->dir)
     {
-        case cDirectionUp:
-            newHeadPos.y--;
-            break;
+    case cDirectionUp:
+        newHeadPos.y--;
+        break;
 
-        case cDirectionDown:
-            newHeadPos.y++;
-            break;
+    case cDirectionDown:
+        newHeadPos.y++;
+        break;
 
-        case cDirectionLeft:
-            newHeadPos.x--;
-            break;
+    case cDirectionLeft:
+        newHeadPos.x--;
+        break;
 
-        case cDirectionRight:
-            newHeadPos.x++;
-            break;
+    case cDirectionRight:
+        newHeadPos.x++;
+        break;
     }
 
     if(newHeadPos.x < 0)
     {
-        newHeadPos.x = 24;
+        newHeadPos.x = 4;
     }
-    else if(newHeadPos.x > 24)
+    else if(newHeadPos.x > 4)
     {
         newHeadPos.x = 0;
     }
 
     if(newHeadPos.y < 0)
     {
-        newHeadPos.y = 24;
+        newHeadPos.y = 4;
     }
-    else if(newHeadPos.y > 24)
+    else if(newHeadPos.y > 4)
     {
         newHeadPos.y = 0;
     }
@@ -261,7 +303,7 @@ void SnakeAddBodyPart(Snake * pSnake)
     pSnake->length++;
     if(pSnake->length % 5 == 0)
     {
-        pSnake->speed = MIN(++pSnake->speed, 30);
+        pSnake->speed = MIN(++pSnake->speed, 2);
     }
 }
 
@@ -291,14 +333,14 @@ void SnakeDraw(Snake * pSnake, SDL_Renderer * pRenderer, const unsigned short ce
     for(current = pSnake->head; current != NULL; current = current->next)
     {
         SDL_Rect r;
-        r.x = current->point.x * cellsize;
-        r.y = current->point.y * cellsize;
-        r.w = cellsize;
-        r.h = cellsize;
+        r.x = (current->point.x * cellsize) + (cellsize / 4);
+        r.y = (current->point.y * cellsize) + (cellsize / 4);
+        r.w = cellsize / 2;
+        r.h = cellsize / 2;
 
         #define MAKE_RGB(rgb) rgb.r, rgb.g, rgb.b
         SDL_SetRenderDrawColor(pRenderer, MAKE_RGB(pSnake->colours[iRGB]), SDL_ALPHA_OPAQUE);
         SDL_RenderFillRect(pRenderer, &r);
-        iRGB++;
+        iRGB = (iRGB + 1) % COLOUR_COUNT;
     }
 }
