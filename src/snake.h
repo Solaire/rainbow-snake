@@ -1,70 +1,66 @@
 #ifndef SNAKE_H
 #define SNAKE_H
 
-#include "gameboard.h"
+#include "types.h"
 
-// Direction enum for the snake
-enum Direction
+// Direction enum
+// Value '2' is skipped to prevent snake from travelling
+// in the opposite direction (more in SnakeChangeDirection() function)
+typedef enum
 {
-    cDirectionNone = -1,
-    cDirectionUp   = 0,
-    cDirectionDown = 1,
-    cDirectionLeft = 3,
-    cDirectionRight = 4
-};
-typedef enum Direction Direction;
+    cDirectionUp    = 0,
+    cDirectionDown  = 1,
+    cDirectionLeft  = 3,
+    cDirectionRight = 4,
+} Direction;
 
-// Structure representing RGB colour
-struct RGB
+// RGB struct
+typedef struct
 {
-    unsigned char r;
-    unsigned char g;
-    unsigned char b;
-};
-typedef struct RGB RGB;
+    uchar r;
+    uchar g;
+    uchar b;
+} RGB;
 
-// Structure representing a single snake cell
-// This structure is a doubly-linked list
+// Snake node as a doubly linked-list
 struct SnakePart
 {
     Point point;
-    struct SnakePart * prev;
-    struct SnakePart * next;
+    struct SnakePart * pPrev;
+    struct SnakePart * pNext;
 };
+
 typedef struct SnakePart SnakePart;
 
-// Lower-level functions for adding/removing snake cells
-static void SnakePartPushHead(SnakePart ** head, SnakePart ** tail, const Point point);
-static void SnakePartPushTail(SnakePart ** head, SnakePart ** tail, const Point point);
-static SnakePart * SnakePartPopHead(SnakePart ** head, SnakePart ** tail);
-static SnakePart * SnakePartPopTail(SnakePart ** head, SnakePart ** tail);
-static unsigned short SnakePartLength(SnakePart * head);
-static void SnakePartFree(SnakePart * head);
-static char SnakePartIsEmpty(SnakePart * head);
+// Some linked-list management functions
+static void SnakePartPushHead(const Point point);
+static void SnakePartPushTail(const Point point);
+static SnakePart * SnakePartPopHead(void);
+static SnakePart * SnakePartPopTail(void);
+static unsigned short SnakePartLength(void);
+static void SnakePartFree(void);
+static BOOL SnakePartIsEmpty(void);
 
-// Main snake structure
-// Contains the length, direction
-// colour array and the pointers to head and tail cells
-struct Snake
-{
-    unsigned short length;
-    Direction dir;
-    RGB * colours;
-    short speed;
+static Direction direction;
+static ushort length;
+static ushort speed;
+static BOOL isActive;
 
-    SnakePart * head;
-    SnakePart * tail;
-};
-typedef struct Snake Snake;
+static RGB * pColourArr;
+static SnakePart * pHead;
+static SnakePart * pTail;
 
-// Higher-level functions for managing the snake structure
-void SnakeInit(Snake * pSnake, const Point initPoint);
-void SnakeFree(Snake * pSnake);
-void SnakeMove(Snake * pSnake);
-void SnakeChangeDirection(Snake * pSnake, const Direction newDirection);
-void SnakeGetNextPos(Snake * pSnake, short * nx, short * ny);
-void SnakeAddBodyPart(Snake * pSnake);
-void SnakeRemoveBodyPart(Snake * pSnake);
-void SnakeDraw(Snake * pSnake, SDL_Renderer * pRenderer, const unsigned short cellsize);
+void SnakeInitialise(Point initialPoint);
+void SnakeFree(void);
+void SnakeMove(void);
+void SnakeChangeDirection(const Direction newDirection);
+void SnakeGetNextPos(Point * pNewPoint);
+void SnakeAddBodyPart(void);
+void SnakeDraw(void);
+ushort SnakeGetLength(void);
+SnakePart * SnakeGetHead(void);
+SnakePart * SnakeGetTail(void);
+ushort SnakeGetSpeed(void);
+BOOL SnakeIsActive(void);
 
 #endif // !SNAKE_H

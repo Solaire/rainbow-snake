@@ -38,10 +38,12 @@
 				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-g" />
+					<Add option="-DDEBUG" />
 				</Compiler>
 				<Linker>
 					<Add library="mingw32" />
 					<Add library="SDL2main" />
+					<Add library="SDL2_ttf" />
 					<Add library="SDL2.dll" />
 					<Add library="user32" />
 					<Add library="gdi32" />
@@ -56,7 +58,8 @@
 				<Option type="0" />
 				<Option compiler="gcc" />
 				<Compiler>
-					<Add option="-O2" />
+					<Add option="-O1" />
+					<Add option="-std=c99" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
@@ -77,17 +80,34 @@
 		<Linker>
 			<Add option="`sdl2-config --libs`" />
 		</Linker>
-		<Unit filename="src/gameboard.c">
+		<Unit filename="src/board.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src/gameboard.h" />
+		<Unit filename="src/board.h" />
+		<Unit filename="src/game.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/game.h" />
+		<Unit filename="src/globals.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/globals.h" />
 		<Unit filename="src/main.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="src/menu.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/menu.h" />
+		<Unit filename="src/renderer.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/renderer.h" />
 		<Unit filename="src/snake.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/snake.h" />
+		<Unit filename="src/types.h" />
 		<Extensions />
 	</Project>
 </CodeBlocks_project_file>
