@@ -49,17 +49,11 @@ void GameRun(void)
         currentTime = newTime;
 
         GetInput(&keycode);
-#ifdef DEBUG
-        if(keycode == SDLK_ESCAPE)
-        {
-            state = cStateExit;
-            return;
-        }
-#endif // DEBUG
         switch(state)
         {
             case cStateMenu:
-                case cStatePause:
+            case cStatePause:
+            case cStateGameOver:
                 GameStateMenu(keycode);
                 break;
 
@@ -67,26 +61,30 @@ void GameRun(void)
                 GameStatePlay(keycode);
                 break;
 
-            case cStateGameOver:
-                GameStateGameOver(keycode);
-                break;
-
             case cStateExit:
                 return;
-        }
 
+            default:
+                break;
+        }
         if(state == cStateExit)
         {
             return;
         }
-        if(state == cStateMenu || state == cStatePause)
+
+        if(isVictory)
         {
-            MenuDraw();
+            state = cStateGameOver;
         }
+
         if(state != cStateMenu)
         {
             BoardDraw();
             SnakeDraw();
+        }
+        if(state == cStateMenu || state == cStatePause)
+        {
+            MenuDraw();
         }
 
         RendererDraw();
@@ -157,7 +155,7 @@ static void GameStatePlay(const SDL_Keycode keycode)
 
         case SDLK_ESCAPE:
             state = cStatePause;
-            break;
+            return;
 
 #ifdef DEBUG
         case SDLK_KP_PLUS:
@@ -190,17 +188,17 @@ static void GameStatePlay(const SDL_Keycode keycode)
 
     SnakeMove();
     const Point HEAD_POINT = SnakeGetHead()->point;
-    if(BoardGetCell(HEAD_POINT.x, HEAD_POINT.y) == cTypeFood)
+    const Celltype CELL = BoardGetCell(HEAD_POINT.x, HEAD_POINT.y);
+    if(CELL == cTypeFood)
     {
         SnakeAddBodyPart();
-        BoardGenerateFood();
+        isVictory = !BoardGenerateFood();
+    }
+    else if(CELL == cTypeSnake || !SnakeInBounds())
+    {
+        isVictory = FALSE;
+        state = cStateGameOver;
     }
     BoardSetCell(HEAD_POINT.x, HEAD_POINT.y, cTypeSnake);
     timer = 0.0;
-}
-
-// Handle 'Game Over' state
-static void GameStateGameOver(const SDL_Keycode keycode)
-{
-    // TODO: implement
 }

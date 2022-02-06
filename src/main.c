@@ -4,6 +4,8 @@
 
 int main(int argc, char * argv[])
 {
+    SDL_Init(SDL_INIT_VIDEO);
+
     // Seed rng
     time_t t;
     srand((unsigned) time(&t));

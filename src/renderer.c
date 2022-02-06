@@ -6,7 +6,21 @@
 // Return false if initialisation fails
 BOOL RendererInitialise(void)
 {
+// In debug mode, create borderless fullscreen
+// Otherwise the fullscreen will fuck with
+// window switching into the debugger
+// In release, just make a full screen
+#ifdef DEBUG
+    SDL_DisplayMode mode;
+    SDL_GetCurrentDisplayMode(0, &mode);
+    const int MAX_WIDTH  = mode.w;
+    const int MAX_HEIGHT = mode.h;
+
+    pWindow = SDL_CreateWindow("Rainbow snake", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, MAX_WIDTH, MAX_HEIGHT, SDL_WINDOW_BORDERLESS | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED);
+#else
     pWindow = SDL_CreateWindow("Rainbow snake", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, SDL_WINDOW_OPENGL | SDL_WINDOW_FULLSCREEN_DESKTOP);
+#endif // DEBUG
+
     if(!pWindow)
     {
         goto InitialiseRenderer_error;
@@ -21,7 +35,7 @@ BOOL RendererInitialise(void)
         goto InitialiseRenderer_error;
     }
 
-    pFont = TTF_OpenFont("/home/kacper/dev/RainbowSnake/font.ttf", 64); // TODO: path
+    pFont = TTF_OpenFont("/home/kacper/dev/RainbowSnake/font.ttf", 64); // TODO: path and font size
     if(!pFont)
     {
         printf("fail\n");

@@ -390,3 +390,10 @@ BOOL SnakeIsActive(void)
 {
     return isActive;
 }
+
+// Check if snake's head is within bounds
+BOOL SnakeInBounds(void)
+{
+    const Point HEAD_POINT = pHead->point;
+    return ( (HEAD_POINT.x >= 0 && HEAD_POINT.y >= 0) && (HEAD_POINT.x < BOARD_WIDTH / CELL_SIZE && HEAD_POINT.y < BOARD_HEIGHT / CELL_SIZE) );
+}

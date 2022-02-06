@@ -62,5 +62,6 @@ SnakePart * SnakeGetHead(void);
 SnakePart * SnakeGetTail(void);
 ushort SnakeGetSpeed(void);
 BOOL SnakeIsActive(void);
+BOOL SnakeInBounds(void);
 
 #endif // !SNAKE_H

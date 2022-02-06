@@ -5,19 +5,71 @@
 
 #include <SDL2/SDL_ttf.h>
 
-// Main menu definitions
-#define MAIN_MENU_ELEMENT_LENGTH 2
-#define MAIN_MENU_STRING_LENGTH 5
+#define ARR_SIZE(a) sizeof(a)/sizeof(a[0])
 
-const char g_MAIN_MENU_ELEMENTS[MAIN_MENU_ELEMENT_LENGTH][MAIN_MENU_STRING_LENGTH] =
+// Shared constants
+#define STRING_TABLE_LENGTH 4
+#define MAX_STRING_LENGTH 10
+
+// String table
+static const char MENU_STRING_TABLE[STRING_TABLE_LENGTH][MAX_STRING_LENGTH] =
 {
     "PLAY",
-    "EXIT"
+    "EXIT",
+    "MAIN MENU",
+    "CONTINUE"
 };
 
-const GameState g_MAIN_MENU_ELEMENT_STATE[MAIN_MENU_ELEMENT_LENGTH] =
+// Enum of index to string in the string table
+typedef enum
+{
+    cStringPlay,
+    cStringExit,
+    cStringMainMenu,
+    cStringContinue
+} StringIndex;
+
+// Main menu strings
+static const StringIndex MAIN_MENU_STRINGS[] =
+{
+    cStringPlay,
+    cStringExit
+};
+
+// Main menu states
+static const GameState MAIN_MENU_STATES[] =
 {
     cStatePlay,
+    cStateExit
+};
+
+// Pause menu strings
+static const StringIndex PAUSE_MENU_STRINGS[] =
+{
+    cStringContinue,
+    cStringMainMenu,
+    cStringExit
+};
+
+// Main menu states
+static const GameState PAUSE_MENU_STATES[] =
+{
+    cStatePlay,
+    cStateMenu,
+    cStateExit
+};
+
+// Game over menu strings
+static const StringIndex GAME_OVER_MENU_STRINGS[] =
+{
+    cStringMainMenu,
+    cStringExit
+};
+
+// Game over menu states
+static const GameState GAME_OVER_MENU_STATES[] =
+{
+    cStateMenu,
     cStateExit
 };
 
@@ -31,20 +83,7 @@ void MenuInitialise(const GameState initialType)
     menuType         = initialType;
 
     pElementArr = (MenuElement *)calloc(maxCount, sizeof(MenuElement));
-
-    switch(menuType)
-    {
-        case cStateMenu:
-            InitialiseMainMenu();
-            break;
-
-        case cStatePause:
-            InitialisePauseMenu();
-            break;
-
-        default:
-            break;
-    }
+    InitialiseMenuElements();
 }
 
 // Free menu resources
@@ -59,6 +98,7 @@ void MenuFree(void)
     maxCount         = 0;
     currentCount     = 0;
     currentSelection = 0;
+    memset(menuTitle, '\0', sizeof(menuTitle));
 }
 
 // Update menu based on the keycode
@@ -83,6 +123,13 @@ BOOL MenuUpdate(const SDL_Keycode keycode, GameState * pState)
         default:
             break;
     }
+
+    if(menuType == cStatePause && keycode == SDLK_ESCAPE)
+    {
+        *pState = cStatePlay;
+        return TRUE;
+    }
+
     return FALSE;
 }
 
@@ -107,22 +154,23 @@ GameState MenuGetType(void)
 // Draw the menu
 void MenuDraw(void)
 {
-    SDL_Renderer * pRenderer = GetRenderer();
-    TTF_Font     * pFont     = GetFont();
+    SDL_Color colour;
+    colour.r = 255;
+    colour.g = 255;
+    colour.b = 255;
+    colour.a = SDL_ALPHA_OPAQUE;
+
+    int windowWidth = 0;
+    int windowHeight = 0;
+    RendererGetWindowSize(&windowWidth, &windowHeight);
+    DrawText(menuTitle, colour, (windowWidth / 2) - 100, (windowHeight / 2) - 200);
 
     for(uchar i = 0; i < currentCount; i++)
     {
-        SDL_Color colour;
-        colour.r = 255;
         colour.g = (i == currentSelection) ? 0 : 255;
         colour.b = (i == currentSelection) ? 0 : 255;
         colour.a = SDL_ALPHA_OPAQUE;
-
-        SDL_Surface * pTextSurface = TTF_RenderText_Solid(pFont, pElementArr[i].displayName, colour);
-        SDL_Texture * pTextTexture = SDL_CreateTextureFromSurface(pRenderer, pTextSurface);
-        SDL_RenderCopy(pRenderer, pTextTexture, NULL, &pElementArr[i].area);
-        SDL_FreeSurface(pTextSurface);
-        SDL_DestroyTexture(pTextTexture);
+        DrawText(pElementArr[i].displayName, colour, pElementArr[i].area.x, pElementArr[i].area.y);
     }
 }
 
@@ -135,38 +183,72 @@ static void MenuAddElement(const MenuElement element)
     }
 }
 
-// Initialise main menu elements
-static void InitialiseMainMenu(void)
+// Initialise menu elements
+static void InitialiseMenuElements(void)
 {
-    const int FONT_SIZE = 64; // TODO: dynamic
+    StringIndex * pMenuStrings = NULL;
+    GameState   * pMenuStates  = NULL;
+    int    menuElementCount = 0;
+
+    switch(menuType)
+    {
+        case cStateMenu:
+            pMenuStrings = MAIN_MENU_STRINGS;
+            pMenuStates   = MAIN_MENU_STATES;
+            menuElementCount = ARR_SIZE(MAIN_MENU_STRINGS);
+            strcpy(menuTitle, "Snake\0");
+            break;
+
+        case cStatePause:
+            pMenuStrings = PAUSE_MENU_STRINGS;
+            pMenuStates   = PAUSE_MENU_STATES;
+            menuElementCount = ARR_SIZE(PAUSE_MENU_STRINGS);
+            strcpy(menuTitle, "Pause\0");
+        break;
+
+        case cStateGameOver:
+            pMenuStrings = GAME_OVER_MENU_STRINGS;
+            pMenuStates   = GAME_OVER_MENU_STATES;
+            menuElementCount = ARR_SIZE(GAME_OVER_MENU_STRINGS);
+            strcpy(menuTitle, "Game over\0");
+        break;
+
+        default:
+            return;
+    }
+
     int windowWidth = 0;
     int windowHeight = 0;
     RendererGetWindowSize(&windowWidth, &windowHeight);
 
-    const int x = (windowWidth / 2) - 100;
+    const int X = (windowWidth / 2) - 100;
     int y = (windowHeight / 2) - 100;
 
-    // TODO: midpoint
-    //const int x = (BOARD_WIDTH / 2) - 100;
-	//int y = (BOARD_HEIGHT / 2) - 200;
-
-	for(int i = 0; i < MAIN_MENU_ELEMENT_LENGTH; i++, y += 64)
+	for(int i = 0; i < menuElementCount; i++, y += 64)
     {
         MenuElement el;
         memset(el.displayName, '\0', sizeof(el.displayName));
-        strcpy(el.displayName, g_MAIN_MENU_ELEMENTS + i);
+        strcpy(el.displayName, MENU_STRING_TABLE[(int)pMenuStrings[i]]);
 
-        el.area.x = x;
+        el.area.x = X;
         el.area.y = y;
-        el.area.w = 128;
-        el.area.h = 64;
-        el.state = g_MAIN_MENU_ELEMENT_STATE[i];
+        TTF_SizeText(GetFont(), el.displayName, &el.area.w, &el.area.h);
+        el.state = pMenuStates[i];
         MenuAddElement(el);
     }
 }
 
-// Initialise pause menu elements
-static void InitialisePauseMenu(void)
+// Draw selected text
+static void DrawText(char * pText, const SDL_Color colour, const ushort x, const ushort y)
 {
+    SDL_Rect r;
+    r.x = x;
+    r.y = y;
+    TTF_SizeText(GetFont(), menuTitle, &r.w, &r.h);
 
+    SDL_Surface * pTextSurface = TTF_RenderText_Solid(GetFont(), pText, colour);
+    SDL_Texture * pTextTexture = SDL_CreateTextureFromSurface(GetRenderer(), pTextSurface);
+    SDL_RenderCopy(GetRenderer(), pTextTexture, NULL, &r);
+    SDL_FreeSurface(pTextSurface);
+    SDL_DestroyTexture(pTextTexture);
 }

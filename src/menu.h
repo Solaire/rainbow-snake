@@ -13,6 +13,7 @@ typedef struct
     GameState state;
 } MenuElement;
 
+static char menuTitle[25];
 static MenuElement * pElementArr = NULL;
 static uchar maxCount;
 static uchar currentCount;
@@ -27,7 +28,7 @@ GameState MenuGetType(void);
 void MenuDraw(void);
 
 static void MenuAddElement(const MenuElement element);
-static void InitialiseMainMenu(void);
-static void InitialisePauseMenu(void);
+static void InitialiseMenuElements(void);
+static void DrawText(char * pText, const SDL_Color colour, const ushort x, const ushort y);
 
 #endif // !MENU_H
