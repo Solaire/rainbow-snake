@@ -20,9 +20,11 @@ BOOL RendererInitialise(void)
     {
         goto InitialiseRenderer_error;
     }
-    pFont = TTF_OpenFont("C:\\dev\\RainbowSnake\\bin\\Win32Debug\\font.ttf", 64); // TODO: path
+
+    pFont = TTF_OpenFont("/home/kacper/dev/RainbowSnake/font.ttf", 64); // TODO: path
     if(!pFont)
     {
+        printf("fail\n");
         goto InitialiseRenderer_error;
     }
 
@@ -62,6 +64,15 @@ void RendererClear(void)
 void RendererDraw(void)
 {
     SDL_RenderPresent(pRenderer);
+}
+
+// Return the window size
+void RendererGetWindowSize(int * pW, int * pH)
+{
+    if(pWindow)
+    {
+        SDL_GetWindowSize(pWindow, pW, pH);
+    }
 }
 
 // Return pointer to the renderer

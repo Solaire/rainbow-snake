@@ -21,7 +21,7 @@ static GameState menuType;
 
 void MenuInitialise(const GameState initialType);
 void MenuFree(void);
-BOOL MenuUpdate(const SDL_KeyCode keycode, GameState * pState);
+BOOL MenuUpdate(const SDL_Keycode keycode, GameState * pState);
 void MenuSetType(const GameState newState);
 GameState MenuGetType(void);
 void MenuDraw(void);

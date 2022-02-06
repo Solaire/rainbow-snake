@@ -8,10 +8,11 @@ int main(int argc, char * argv[])
     time_t t;
     srand((unsigned) time(&t));
 
-    if(!RendererInitialise() || !GameInitialise())
+    if(!RendererInitialise())
     {
         return -1;
     }
+    GameInitialise();
 
     // GameRun() will execute until the internal state is 'exit'
     GameRun();

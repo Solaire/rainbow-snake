@@ -64,7 +64,7 @@ void MenuFree(void)
 // Update menu based on the keycode
 // Return TRUE if selection is made, otherwise return FALSE
 // If selection is made (Enter/Return), set the element state variable
-BOOL MenuUpdate(const SDL_KeyCode keycode, GameState * pState)
+BOOL MenuUpdate(const SDL_Keycode keycode, GameState * pState)
 {
     switch(keycode)
     {
@@ -138,9 +138,17 @@ static void MenuAddElement(const MenuElement element)
 // Initialise main menu elements
 static void InitialiseMainMenu(void)
 {
+    const int FONT_SIZE = 64; // TODO: dynamic
+    int windowWidth = 0;
+    int windowHeight = 0;
+    RendererGetWindowSize(&windowWidth, &windowHeight);
+
+    const int x = (windowWidth / 2) - 100;
+    int y = (windowHeight / 2) - 100;
+
     // TODO: midpoint
-    const int x = (BOARD_WIDTH / 2) - 100;
-	int y = (BOARD_HEIGHT / 2) - 200;
+    //const int x = (BOARD_WIDTH / 2) - 100;
+	//int y = (BOARD_HEIGHT / 2) - 200;
 
 	for(int i = 0; i < MAIN_MENU_ELEMENT_LENGTH; i++, y += 64)
     {

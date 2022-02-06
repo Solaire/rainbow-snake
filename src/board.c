@@ -36,6 +36,12 @@ void BoardFree(void)
 void BoardDraw(void)
 {
     SDL_Renderer * pRenderer = GetRenderer();
+    int windowWidth = 0;
+    int windowHeight = 0;
+    RendererGetWindowSize(&windowWidth, &windowHeight);
+
+    const int OFFSET_X = (windowWidth / 2) - (BOARD_WIDTH / 2);
+    const int OFFSET_Y = (windowHeight / 2) - (BOARD_HEIGHT / 2);
 
     for(ushort x = 0; x < width; x++)
     {
@@ -45,7 +51,7 @@ void BoardDraw(void)
             if(CURRENT == cTypeWall)
             {
                 SDL_SetRenderDrawColor(pRenderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
-                const ushort OFFSET = cellsize / 5;
+                const ushort CELL_PADDING = cellsize / 5;
 
                 // Evil macro function
                 // Draw the wall segments for the edges
@@ -65,14 +71,16 @@ void BoardDraw(void)
                     \
                     if(isAxisX)\
                     {\
-                        r.x = (axis == floor) ? axis * cellsize : (axis * cellsize) + (OFFSET * 4);\
-                        r.w = OFFSET;\
+                        r.x = (axis == floor) ? axis * cellsize : (axis * cellsize) + (CELL_PADDING * 4);\
+                        r.w = CELL_PADDING;\
                     }\
                     else\
                     {\
-                        r.y = (axis == floor) ? axis * cellsize : (axis * cellsize) + (OFFSET * 4);\
-                        r.h = OFFSET;\
+                        r.y = (axis == floor) ? axis * cellsize : (axis * cellsize) + (CELL_PADDING * 4);\
+                        r.h = CELL_PADDING;\
                     }\
+                    r.x += OFFSET_X;\
+                    r.y += OFFSET_Y;\
                     SDL_RenderFillRect(pRenderer, &r);\
                 }while(FALSE)
                 DRAW_CELL(x, 1, 0, width - 1);
@@ -100,8 +108,8 @@ void BoardDraw(void)
             SDL_Rect r;
             r.w = cellsize;
             r.h = cellsize;
-            r.x = x * cellsize;
-            r.y = y * cellsize;
+            r.x = OFFSET_X + (x * cellsize);
+            r.y = OFFSET_Y + (y * cellsize);
 
             SDL_RenderFillRect(pRenderer, &r);
         }
@@ -112,11 +120,11 @@ void BoardDraw(void)
     SDL_SetRenderDrawColor(pRenderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
     for(unsigned short x = 0; x <= width * cellsize; x += cellsize)
     {
-        SDL_RenderDrawLine(pRenderer, x, 0, x, height * cellsize);
+        SDL_RenderDrawLine(pRenderer, OFFSET_X + x, OFFSET_Y, OFFSET_X + x, OFFSET_Y + (height * cellsize));
     }
     for(unsigned short y = 0; y <= height * cellsize; y += cellsize)
     {
-        SDL_RenderDrawLine(pRenderer, 0, y, width * cellsize, y);
+        SDL_RenderDrawLine(pRenderer, OFFSET_X, OFFSET_Y + y, OFFSET_X + (width * cellsize), OFFSET_Y + y);
     }
     #endif // DEBUG
 }
@@ -228,7 +236,7 @@ void BoardGetMidPoint(Point * pPoint)
 {
     if(pPoint)
     {
-        pPoint->x = 10;
-        pPoint->y = 10;
+        pPoint->x = width / 2;
+        pPoint->y = height / 2;
     }
 }

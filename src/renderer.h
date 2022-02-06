@@ -15,6 +15,7 @@ BOOL RendererInitialise(void);
 void RendererFree(void);
 void RendererClear(void);
 void RendererDraw(void);
+void RendererGetWindowSize(int * pW, int * pH);
 
 SDL_Renderer * GetRenderer(void);
 TTF_Font * GetFont(void);

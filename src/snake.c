@@ -283,6 +283,13 @@ void SnakeDraw(void)
     SnakePart * pCurrent;
     SDL_Renderer * pRenderer = GetRenderer();
 
+    int windowWidth = 0;
+    int windowHeight = 0;
+    RendererGetWindowSize(&windowWidth, &windowHeight);
+
+    const int OFFSET_X = (windowWidth / 2) - (BOARD_WIDTH / 2);
+    const int OFFSET_Y = (windowHeight / 2) - (BOARD_HEIGHT / 2);
+
     for(pCurrent = pHead; pCurrent; pCurrent = pCurrent->pNext)
     {
         // Set the correct rainbow colour
@@ -304,27 +311,31 @@ void SnakeDraw(void)
             #define DRAW_CELL(a, b)\
                 do\
                 {\
-                    const short offset = (CELL_SIZE / 5);\
+                    const short PADDING = (CELL_SIZE / 5);\
                     Point diff = a;\
                     diff.x -= b.x;\
                     diff.y -= b.y;\
                     \
                     SDL_Rect r;\
-                    r.x = (a.x * CELL_SIZE) + offset;\
-                    r.y = (a.y * CELL_SIZE) + offset;\
-                    r.w = offset * 4;\
-                    r.h = offset * 3;\
+                    r.x = (a.x * CELL_SIZE) + PADDING;\
+                    r.y = (a.y * CELL_SIZE) + PADDING;\
+                    r.w = PADDING * 4;\
+                    r.h = PADDING * 3;\
                     \
                     if(diff.x != 0)\
                     {\
-                        r.x = (diff.x == 1) ? r.x - offset : r.x;\
+                        r.x = (diff.x == 1) ? r.x - PADDING : r.x;\
+                        r.x += OFFSET_X;\
+                        r.y += OFFSET_Y;\
                         SDL_RenderFillRect(pRenderer, &r);\
                     }\
                     else if(diff.y != 0)\
                     {\
-                        r.w = offset * 3;\
-                        r.h = offset * 4;\
-                        r.y = (diff.y == 1) ? r.y - offset : r.y;\
+                        r.w = PADDING * 3;\
+                        r.h = PADDING * 4;\
+                        r.y = (diff.y == 1) ? r.y - PADDING : r.y;\
+                        r.x += OFFSET_X;\
+                        r.y += OFFSET_Y;\
                         SDL_RenderFillRect(pRenderer, &r);\
                     }\
                 }while(0)
@@ -341,8 +352,8 @@ void SnakeDraw(void)
         else // Snake is 1 cell big. Draw a simple square
         {
             SDL_Rect r;
-            r.x = (pCurrent->point.x * CELL_SIZE) + (CELL_SIZE / 5);
-            r.y = (pCurrent->point.y * CELL_SIZE) + (CELL_SIZE / 5);
+            r.x = OFFSET_X + (pCurrent->point.x * CELL_SIZE) + (CELL_SIZE / 5);
+            r.y = OFFSET_Y + (pCurrent->point.y * CELL_SIZE) + (CELL_SIZE / 5);
             r.w = (CELL_SIZE / 5) * 3;
             r.h = (CELL_SIZE / 5) * 3;
             SDL_RenderFillRect(pRenderer, &r);

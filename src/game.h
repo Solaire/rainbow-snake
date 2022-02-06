@@ -25,10 +25,10 @@ void GameInitialise(void);
 void GameFree(void);
 void GameRun(void);
 
-static void GetInput(SDL_KeyCode * pKeyCode);
+static void GetInput(SDL_Keycode * pKeycode);
 
-static void GameStateMenu(const SDL_KeyCode keyCode);
-static void GameStatePlay(const SDL_KeyCode keyCode);
-static void GameStateGameOver(const SDL_KeyCode keyCode);
+static void GameStateMenu(const SDL_Keycode keycode);
+static void GameStatePlay(const SDL_Keycode keycode);
+static void GameStateGameOver(const SDL_Keycode keycode);
 
 #endif // !GAME_H

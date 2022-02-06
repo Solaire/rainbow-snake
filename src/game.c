@@ -38,7 +38,7 @@ void GameFree(void)
 void GameRun(void)
 {
     double currentTime = SDL_GetTicks();
-    SDL_KeyCode keycode = SDLK_UNKNOWN;
+    SDL_Keycode keycode = SDLK_UNKNOWN;
 
     while(state != cStateExit)
     {
@@ -98,9 +98,9 @@ void GameRun(void)
 // If exit event, set the internal state to 'exit'
 // If a valid keyboard input (keydown), set
 //   the pKeyCode and return
-static void GetInput(SDL_KeyCode * pKeyCode)
+static void GetInput(SDL_Keycode * pKeycode)
 {
-    *pKeyCode = SDLK_UNKNOWN;
+    *pKeycode = SDLK_UNKNOWN;
 
     SDL_Event e;
     while(SDL_PollEvent(&e))
@@ -112,7 +112,7 @@ static void GetInput(SDL_KeyCode * pKeyCode)
         }
         else if(e.type == SDL_KEYDOWN)
         {
-            *pKeyCode = e.key.keysym.sym;
+            *pKeycode = e.key.keysym.sym;
             return;
         }
     }
@@ -121,13 +121,13 @@ static void GetInput(SDL_KeyCode * pKeyCode)
 // Update the menu object
 // If the menu type does not match the game state
 // Change the menu type before updating
-static void GameStateMenu(const SDL_KeyCode keyCode)
+static void GameStateMenu(const SDL_Keycode keycode)
 {
     if(MenuGetType() != state)
     {
         MenuSetType(state);
     }
-    MenuUpdate(keyCode, &state);
+    MenuUpdate(keycode, &state);
 }
 
 // Update the game's logic
@@ -135,9 +135,9 @@ static void GameStateMenu(const SDL_KeyCode keyCode)
 // movement (if needed)
 // Snake's logic is only updated according to the speed value
 // eg. speed 1 = 1 fps, speed 10 = 10 fps
-static void GameStatePlay(const SDL_KeyCode keyCode)
+static void GameStatePlay(const SDL_Keycode keycode)
 {
-    switch(keyCode)
+    switch(keycode)
     {
         case SDLK_UP:
             SnakeChangeDirection(cDirectionUp);
@@ -200,7 +200,7 @@ static void GameStatePlay(const SDL_KeyCode keyCode)
 }
 
 // Handle 'Game Over' state
-static void GameStateGameOver(const SDL_KeyCode keyCode)
+static void GameStateGameOver(const SDL_Keycode keycode)
 {
-
+    // TODO: implement
 }
