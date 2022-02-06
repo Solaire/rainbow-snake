@@ -12,7 +12,7 @@
 1644145393 /home/kacper/dev/RainbowSnake/src/snake.h
 	"types.h"
 
-1644147382 source:/home/kacper/dev/RainbowSnake/src/snake.c
+1644158318 source:/home/kacper/dev/RainbowSnake/src/snake.c
 	"snake.h"
 	"globals.h"
 	"renderer.h"
@@ -107,7 +107,7 @@
 	"renderer.h"
 	<stdio.h>
 
-1644149460 source:/home/kacper/dev/RainbowSnake/src/game.c
+1644158207 source:/home/kacper/dev/RainbowSnake/src/game.c
 	"game.h"
 	"renderer.h"
 	"board.h"
@@ -123,7 +123,7 @@
 	<SDL2/SDL_rect.h>
 	<SDL2/SDL_keyboard.h>
 
-1644149406 source:/home/kacper/dev/RainbowSnake/src/menu.c
+1644183460 source:/home/kacper/dev/RainbowSnake/src/menu.c
 	"menu.h"
 	"renderer.h"
 	"globals.h"

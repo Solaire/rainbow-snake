@@ -154,6 +154,23 @@ GameState MenuGetType(void)
 // Draw the menu
 void MenuDraw(void)
 {
+    // If pause or game over, draw a semi-transparent background
+    if(menuType != cStateMenu)
+    {
+        int windowWidth = 0;
+        int windowHeight = 0;
+        RendererGetWindowSize(&windowWidth, &windowHeight);
+
+        SDL_Rect r;
+        r.x = (windowWidth / 2) - (BOARD_WIDTH / 2);
+        r.y = (windowHeight / 2) - (BOARD_HEIGHT / 2);
+        r.w = BOARD_WIDTH + 1;
+        r.h = BOARD_HEIGHT + 1;
+
+        SDL_SetRenderDrawColor(GetRenderer(), 0, 0, 0, SDL_ALPHA_TRANSPARENT);
+        SDL_RenderFillRect(GetRenderer(), &r);
+    }
+
     SDL_Color colour;
     colour.r = 255;
     colour.g = 255;
@@ -224,7 +241,7 @@ static void InitialiseMenuElements(void)
     const int X = (windowWidth / 2) - 100;
     int y = (windowHeight / 2) - 100;
 
-	for(int i = 0; i < menuElementCount; i++, y += 64)
+	for(int i = 0; i < menuElementCount; i++, y += 100)
     {
         MenuElement el;
         memset(el.displayName, '\0', sizeof(el.displayName));
@@ -244,7 +261,7 @@ static void DrawText(char * pText, const SDL_Color colour, const ushort x, const
     SDL_Rect r;
     r.x = x;
     r.y = y;
-    TTF_SizeText(GetFont(), menuTitle, &r.w, &r.h);
+    TTF_SizeText(GetFont(), pText, &r.w, &r.h);
 
     SDL_Surface * pTextSurface = TTF_RenderText_Solid(GetFont(), pText, colour);
     SDL_Texture * pTextTexture = SDL_CreateTextureFromSurface(GetRenderer(), pTextSurface);

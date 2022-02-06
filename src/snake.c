@@ -272,7 +272,7 @@ void SnakeAddBodyPart(void)
     length++;
     if(length % 5 == 0)
     {
-        speed = fmin(++speed, 5);
+        speed = fmin(++speed, 10);
     }
 }
 

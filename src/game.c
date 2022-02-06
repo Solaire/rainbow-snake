@@ -82,7 +82,7 @@ void GameRun(void)
             BoardDraw();
             SnakeDraw();
         }
-        if(state == cStateMenu || state == cStatePause)
+        if(state == cStateMenu || state == cStatePause || state == cStateGameOver)
         {
             MenuDraw();
         }
