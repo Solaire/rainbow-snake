@@ -162,10 +162,10 @@ void MenuDraw(void)
         RendererGetWindowSize(&windowWidth, &windowHeight);
 
         SDL_Rect r;
-        r.x = (windowWidth / 2) - (BOARD_WIDTH / 2);
-        r.y = (windowHeight / 2) - (BOARD_HEIGHT / 2);
-        r.w = BOARD_WIDTH + 1;
-        r.h = BOARD_HEIGHT + 1;
+        r.x = (windowWidth / 2) - ((BOARD_WIDTH * CELL_SIZE) / 2);
+        r.y = (windowHeight / 2) - ((BOARD_HEIGHT * CELL_SIZE) / 2);
+        r.w = (BOARD_WIDTH * CELL_SIZE) + 1;
+        r.h = (BOARD_HEIGHT * CELL_SIZE) + 1;
 
         SDL_SetRenderDrawColor(GetRenderer(), 0, 0, 0, SDL_ALPHA_TRANSPARENT);
         SDL_RenderFillRect(GetRenderer(), &r);

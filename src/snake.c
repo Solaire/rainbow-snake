@@ -272,7 +272,7 @@ void SnakeAddBodyPart(void)
     length++;
     if(length % 5 == 0)
     {
-        speed = fmin(++speed, 10);
+        speed = fmin(++speed, 5);
     }
 }
 
@@ -287,8 +287,8 @@ void SnakeDraw(void)
     int windowHeight = 0;
     RendererGetWindowSize(&windowWidth, &windowHeight);
 
-    const int OFFSET_X = (windowWidth / 2) - (BOARD_WIDTH / 2);
-    const int OFFSET_Y = (windowHeight / 2) - (BOARD_HEIGHT / 2);
+    const int OFFSET_X = (windowWidth / 2) - ((BOARD_WIDTH * CELL_SIZE) / 2);
+    const int OFFSET_Y = (windowHeight / 2) - ((BOARD_HEIGHT * CELL_SIZE) / 2);
 
     for(pCurrent = pHead; pCurrent; pCurrent = pCurrent->pNext)
     {
@@ -395,5 +395,5 @@ BOOL SnakeIsActive(void)
 BOOL SnakeInBounds(void)
 {
     const Point HEAD_POINT = pHead->point;
-    return ( (HEAD_POINT.x >= 0 && HEAD_POINT.y >= 0) && (HEAD_POINT.x < BOARD_WIDTH / CELL_SIZE && HEAD_POINT.y < BOARD_HEIGHT / CELL_SIZE) );
+    return ( (HEAD_POINT.x >= 0 && HEAD_POINT.y >= 0) && (HEAD_POINT.x < BOARD_WIDTH && HEAD_POINT.y < BOARD_HEIGHT) );
 }

@@ -9,24 +9,16 @@ static short ToIndex(const ushort x, const ushort y, const ushort width)
     return (y * width) + x;
 }
 
-// Initialise board size and cell array
+// Initialise the board resources
 void BoardInitialise(void)
 {
-    width    = BOARD_WIDTH / CELL_SIZE;
-    height   = BOARD_HEIGHT / CELL_SIZE;
-    cellsize = CELL_SIZE;
-
     // calloc should set all values to 0 (cTypeFree)
-    pCellArr = (uchar *)calloc(width * height, sizeof(uchar));
+    pCellArr = (uchar *)calloc(BOARD_WIDTH * BOARD_HEIGHT, sizeof(uchar));
 }
 
-// Set all variables to 0 and free the cell array
+// Free the board resources
 void BoardFree(void)
 {
-    width    = 0;
-    height   = 0;
-    cellsize = 0;
-
     free(pCellArr);
 }
 
@@ -40,18 +32,18 @@ void BoardDraw(void)
     int windowHeight = 0;
     RendererGetWindowSize(&windowWidth, &windowHeight);
 
-    const int OFFSET_X = (windowWidth / 2) - (BOARD_WIDTH / 2);
-    const int OFFSET_Y = (windowHeight / 2) - (BOARD_HEIGHT / 2);
+    const int OFFSET_X = (windowWidth / 2) - ((BOARD_WIDTH * CELL_SIZE) / 2);
+    const int OFFSET_Y = (windowHeight / 2) - ((BOARD_HEIGHT * CELL_SIZE) / 2);
 
-    for(ushort x = 0; x < width; x++)
+    for(ushort x = 0; x < BOARD_WIDTH; x++)
     {
-        for(ushort y = 0; y < height; y++)
+        for(ushort y = 0; y < BOARD_HEIGHT; y++)
         {
             const Celltype CURRENT = BoardGetCell(x, y);
             if(CURRENT == cTypeWall)
             {
                 SDL_SetRenderDrawColor(pRenderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
-                const ushort CELL_PADDING = cellsize / 5;
+                const ushort CELL_PADDING = CELL_SIZE / 5;
 
                 // Evil macro function
                 // Draw the wall segments for the edges
@@ -64,27 +56,27 @@ void BoardDraw(void)
                     if(axis != floor && axis != ceiling) { break; }\
                     \
                     SDL_Rect r;\
-                    r.x = x * cellsize;\
-                    r.y = y * cellsize;\
-                    r.w = cellsize;\
-                    r.h = cellsize;\
+                    r.x = x * CELL_SIZE;\
+                    r.y = y * CELL_SIZE;\
+                    r.w = CELL_SIZE;\
+                    r.h = CELL_SIZE;\
                     \
                     if(isAxisX)\
                     {\
-                        r.x = (axis == floor) ? axis * cellsize : (axis * cellsize) + (CELL_PADDING * 4);\
+                        r.x = (axis == floor) ? axis * CELL_SIZE : (axis * CELL_SIZE) + (CELL_PADDING * 4);\
                         r.w = CELL_PADDING;\
                     }\
                     else\
                     {\
-                        r.y = (axis == floor) ? axis * cellsize : (axis * cellsize) + (CELL_PADDING * 4);\
+                        r.y = (axis == floor) ? axis * CELL_SIZE : (axis * CELL_SIZE) + (CELL_PADDING * 4);\
                         r.h = CELL_PADDING;\
                     }\
                     r.x += OFFSET_X;\
                     r.y += OFFSET_Y;\
                     SDL_RenderFillRect(pRenderer, &r);\
                 }while(FALSE)
-                DRAW_CELL(x, 1, 0, width - 1);
-                DRAW_CELL(y, 0, 0, height - 1);
+                DRAW_CELL(x, TRUE, 0, BOARD_WIDTH - 1);
+                DRAW_CELL(y, FALSE, 0, BOARD_HEIGHT - 1);
                 #undef DRAW_CELL
                 continue;
             }
@@ -106,10 +98,10 @@ void BoardDraw(void)
             }
 
             SDL_Rect r;
-            r.w = cellsize;
-            r.h = cellsize;
-            r.x = OFFSET_X + (x * cellsize);
-            r.y = OFFSET_Y + (y * cellsize);
+            r.w = CELL_SIZE;
+            r.h = CELL_SIZE;
+            r.x = OFFSET_X + (x * CELL_SIZE);
+            r.y = OFFSET_Y + (y * CELL_SIZE);
 
             SDL_RenderFillRect(pRenderer, &r);
         }
@@ -118,13 +110,13 @@ void BoardDraw(void)
     // Draw the grid
     #ifdef DEBUG
     SDL_SetRenderDrawColor(pRenderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
-    for(unsigned short x = 0; x <= width * cellsize; x += cellsize)
+    for(unsigned short x = 0; x <= BOARD_WIDTH * CELL_SIZE; x += CELL_SIZE)
     {
-        SDL_RenderDrawLine(pRenderer, OFFSET_X + x, OFFSET_Y, OFFSET_X + x, OFFSET_Y + (height * cellsize));
+        SDL_RenderDrawLine(pRenderer, OFFSET_X + x, OFFSET_Y, OFFSET_X + x, OFFSET_Y + (BOARD_HEIGHT * CELL_SIZE));
     }
-    for(unsigned short y = 0; y <= height * cellsize; y += cellsize)
+    for(unsigned short y = 0; y <= BOARD_HEIGHT * CELL_SIZE; y += CELL_SIZE)
     {
-        SDL_RenderDrawLine(pRenderer, OFFSET_X, OFFSET_Y + y, OFFSET_X + (width * cellsize), OFFSET_Y + y);
+        SDL_RenderDrawLine(pRenderer, OFFSET_X, OFFSET_Y + y, OFFSET_X + (BOARD_WIDTH * CELL_SIZE), OFFSET_Y + y);
     }
     #endif // DEBUG
 }
@@ -132,9 +124,9 @@ void BoardDraw(void)
 // Determine if the tile in x/y position is a free tile
 BOOL BoardIsTileFree(const ushort x, const ushort y)
 {
-    if(x < width && y < height)
+    if(x < BOARD_WIDTH && y < BOARD_HEIGHT)
     {
-        const short INDEX = ToIndex(x, y, width);
+        const short INDEX = ToIndex(x, y, BOARD_WIDTH);
         return (pCellArr[INDEX] == (uchar)cTypeFree);
     }
     return FALSE;
@@ -144,18 +136,18 @@ BOOL BoardIsTileFree(const ushort x, const ushort y)
 // If index out of range, ignore
 void BoardSetCell(const ushort x, const ushort y, const Celltype cell)
 {
-    if(x < width && y < height)
+    if(x < BOARD_WIDTH && y < BOARD_HEIGHT)
     {
-        pCellArr[ToIndex(x, y, width)] = cell;
+        pCellArr[ToIndex(x, y, BOARD_WIDTH)] = cell;
     }
 }
 
 // Return the cell at specified x/y position
 Celltype BoardGetCell(const ushort x, const ushort y)
 {
-    if(x < width && y < height)
+    if(x < BOARD_WIDTH && y < BOARD_HEIGHT)
     {
-        return pCellArr[ToIndex(x, y, width)];
+        return pCellArr[ToIndex(x, y, BOARD_WIDTH)];
     }
     return cTypeFree;
 }
@@ -164,7 +156,7 @@ Celltype BoardGetCell(const ushort x, const ushort y)
 BOOL BoardIsComplete(void)
 {
     ushort count = 0;
-    for(int i = 0; i < width * height; i++)
+    for(int i = 0; i < BOARD_WIDTH * BOARD_HEIGHT; i++)
     {
         if(pCellArr[i] == (uchar)cTypeFree)
         {
@@ -182,15 +174,15 @@ void BoardGetFreeCells(const ushort snakeLength, Point ** ppArr, ushort * pLengt
         free(ppArr);
     }
 
-    const uint INIT_LENGTH = (width * height) - snakeLength;
+    const uint INIT_LENGTH = (BOARD_WIDTH * BOARD_HEIGHT) - snakeLength;
     Point * pPointArr = (Point *)malloc(INIT_LENGTH * sizeof(Point));
 
     uint i = 0;
-    for(ushort x = 0; x < width; x++)
+    for(ushort x = 0; x < BOARD_WIDTH; x++)
     {
-        for(ushort y = 0; y < height; y++)
+        for(ushort y = 0; y < BOARD_HEIGHT; y++)
         {
-            const short INDEX = ToIndex(x, y, width);
+            const short INDEX = ToIndex(x, y, BOARD_WIDTH);
             if(pCellArr[INDEX] == (uchar)cTypeFree)
             {
                 pPointArr[i].x = x;
@@ -236,7 +228,7 @@ void BoardGetMidPoint(Point * pPoint)
 {
     if(pPoint)
     {
-        pPoint->x = width / 2;
-        pPoint->y = height / 2;
+        pPoint->x = BOARD_WIDTH / 2;
+        pPoint->y = BOARD_HEIGHT / 2;
     }
 }

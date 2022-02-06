@@ -121,11 +121,16 @@ static void GetInput(SDL_Keycode * pKeycode)
 // Change the menu type before updating
 static void GameStateMenu(const SDL_Keycode keycode)
 {
+    GameState oldState = state;
     if(MenuGetType() != state)
     {
         MenuSetType(state);
     }
     MenuUpdate(keycode, &state);
+    if(oldState == cStateMenu && state == cStatePlay)
+    {
+        GameReset();
+    }
 }
 
 // Update the game's logic
@@ -201,4 +206,29 @@ static void GameStatePlay(const SDL_Keycode keycode)
     }
     BoardSetCell(HEAD_POINT.x, HEAD_POINT.y, cTypeSnake);
     timer = 0.0;
+}
+
+// Reset board and game data
+static void GameReset(void)
+{
+    BoardFree();
+    SnakeFree();
+
+    BoardInitialise();
+
+    Point initPoint;
+    BoardGetMidPoint(&initPoint);
+
+    SnakeInitialise(initPoint);
+
+    SnakePart * pCurrent = NULL;
+    for(pCurrent = SnakeGetHead(); pCurrent; pCurrent = pCurrent->pNext)
+    {
+        BoardSetCell(pCurrent->point.x, pCurrent->point.y, cTypeSnake);
+    }
+    BoardGenerateFood();
+
+    snakeLength = SnakeGetLength();
+    isVictory   = FALSE;
+    timer       = 0.0;
 }

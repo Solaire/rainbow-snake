@@ -30,5 +30,6 @@ static void GetInput(SDL_Keycode * pKeycode);
 static void GameStateMenu(const SDL_Keycode keycode);
 static void GameStatePlay(const SDL_Keycode keycode);
 static void GameStateGameOver(const SDL_Keycode keycode);
+static void GameReset(void);
 
 #endif // !GAME_H

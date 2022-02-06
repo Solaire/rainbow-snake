@@ -13,9 +13,6 @@ typedef enum
     cTypeFood = 3,
 } Celltype;
 
-static ushort width;
-static ushort height;
-static ushort cellsize;
 static uchar * pCellArr;
 
 void BoardInitialise(void);
