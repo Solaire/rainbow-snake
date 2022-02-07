@@ -94,7 +94,7 @@ void BoardDraw(void)
             #endif // DEBUG
             else
             {
-                SDL_SetRenderDrawColor(pRenderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
+                SDL_SetRenderDrawColor(pRenderer, 0, 0, 255, SDL_ALPHA_OPAQUE);
             }
 
             SDL_Rect r;
@@ -191,17 +191,17 @@ void BoardGetFreeCells(const ushort snakeLength, Point ** ppArr, ushort * pLengt
             }
         }
     }
-
     *pLength = i;
     *ppArr = pPointArr;
 }
 
 // Find random free cell and turn it into a food cell
-BOOL BoardGenerateFood(void)
+BOOL BoardGenerateFood(const ushort snakeLength)
 {
     Point * pFreePoints = NULL;
     ushort length = 0;
-    BoardGetFreeCells(0, &pFreePoints, &length);
+    BoardGetFreeCells(snakeLength, &pFreePoints, &length);
+
     if(length == 0)
     {
         return FALSE;
@@ -212,7 +212,7 @@ BOOL BoardGenerateFood(void)
     }
     else
     {
-        const Point RAND_POINT = pFreePoints[rand() & length];
+        const Point RAND_POINT = pFreePoints[rand() % length];
         BoardSetCell(RAND_POINT.x, RAND_POINT.y, cTypeFood);
     }
 

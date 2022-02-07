@@ -15,4 +15,7 @@ extern const double FPS;
 extern const ushort SNAKE_COLOUR_COUNT;
 extern const ushort SNAKE_GRADIENT_LENGTH;
 
+// Initial snake length
+extern const ushort SNAKE_INIT_LENGTH;
+
 #endif // !GLOBALS_H

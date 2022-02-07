@@ -1,29 +1,14 @@
 #include "game.h"
 #include "renderer.h"
 #include "board.h"
+#include "globals.h"
 
 // Initialise game board and the snake
 void GameInitialise(void)
 {
     MenuInitialise(cStateMenu);
-    BoardInitialise();
-
-    Point initPoint;
-    BoardGetMidPoint(&initPoint);
-
-    SnakeInitialise(initPoint);
-
-    SnakePart * pCurrent = NULL;
-    for(pCurrent = SnakeGetHead(); pCurrent; pCurrent = pCurrent->pNext)
-    {
-        BoardSetCell(pCurrent->point.x, pCurrent->point.y, cTypeSnake);
-    }
-    BoardGenerateFood();
-
     state       = cStateMenu;
-    snakeLength = SnakeGetLength();
-    isVictory   = FALSE;
-    timer       = 0.0;
+    GameReset();
 }
 
 // Free gameboard and snake resources
@@ -177,6 +162,7 @@ static void GameStatePlay(const SDL_Keycode keycode)
     {
         return;
     }
+    timer = 0.0;
 
     // If snake has just eaten, the board state and snake might be out of sync
     // causing the food to spawn on the snake's tail
@@ -194,10 +180,12 @@ static void GameStatePlay(const SDL_Keycode keycode)
     SnakeMove();
     const Point HEAD_POINT = SnakeGetHead()->point;
     const Celltype CELL = BoardGetCell(HEAD_POINT.x, HEAD_POINT.y);
+    BOOL newFood = FALSE;
+
     if(CELL == cTypeFood)
     {
         SnakeAddBodyPart();
-        isVictory = !BoardGenerateFood();
+        newFood = TRUE;
     }
     else if(CELL == cTypeSnake || !SnakeInBounds())
     {
@@ -205,7 +193,10 @@ static void GameStatePlay(const SDL_Keycode keycode)
         state = cStateGameOver;
     }
     BoardSetCell(HEAD_POINT.x, HEAD_POINT.y, cTypeSnake);
-    timer = 0.0;
+    if(newFood)
+    {
+        isVictory = !BoardGenerateFood(SnakeGetLength());
+    }
 }
 
 // Reset board and game data
@@ -219,14 +210,14 @@ static void GameReset(void)
     Point initPoint;
     BoardGetMidPoint(&initPoint);
 
-    SnakeInitialise(initPoint);
+    SnakeInitialise(initPoint, SNAKE_INIT_LENGTH);
 
     SnakePart * pCurrent = NULL;
     for(pCurrent = SnakeGetHead(); pCurrent; pCurrent = pCurrent->pNext)
     {
         BoardSetCell(pCurrent->point.x, pCurrent->point.y, cTypeSnake);
     }
-    BoardGenerateFood();
+    BoardGenerateFood(SNAKE_INIT_LENGTH);
 
     snakeLength = SnakeGetLength();
     isVictory   = FALSE;

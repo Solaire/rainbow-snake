@@ -111,11 +111,11 @@ static BOOL SnakePartIsEmpty(void)
 
 // Create snake resources
 // Initialise the gradient array
-void SnakeInitialise(Point initialPoint)
+void SnakeInitialise(Point initialPoint, const ushort initialLength)
 {
     // Snake resources
     direction   = cDirectionRight;
-    length      = 5;
+    length      = initialLength;
     speed       = 1;
     isActive    = FALSE;
 
@@ -177,7 +177,7 @@ void SnakeInitialise(Point initialPoint)
 
     // Add 5 snake parts
     SnakePartPushHead(initialPoint);
-    for(ushort i = 0; i < 5; i++)
+    for(ushort i = 0; i < initialLength; i++)
     {
         initialPoint.x--;
         SnakePartPushTail(initialPoint);
@@ -272,7 +272,7 @@ void SnakeAddBodyPart(void)
     length++;
     if(length % 5 == 0)
     {
-        speed = fmin(++speed, 5);
+        speed = fmin(++speed, 1);
     }
 }
 

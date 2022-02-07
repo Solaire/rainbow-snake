@@ -50,7 +50,7 @@ static RGB * pColourArr;
 static SnakePart * pHead;
 static SnakePart * pTail;
 
-void SnakeInitialise(Point initialPoint);
+void SnakeInitialise(Point initialPoint, const ushort initialLength);
 void SnakeFree(void);
 void SnakeMove(void);
 void SnakeChangeDirection(const Direction newDirection);

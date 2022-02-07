@@ -155,7 +155,8 @@ GameState MenuGetType(void)
 void MenuDraw(void)
 {
     // If pause or game over, draw a semi-transparent background
-    if(menuType != cStateMenu)
+    //if(menuType != cStateMenu)
+    if(FALSE)
     {
         int windowWidth = 0;
         int windowHeight = 0;

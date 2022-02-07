@@ -23,7 +23,7 @@ void BoardSetCell(const ushort x, const ushort y, const Celltype cell);
 Celltype BoardGetCell(const ushort x, const ushort y);
 BOOL BoardIsComplete(void);
 void BoardGetFreeCells(const ushort snakeLength, Point ** ppArr, ushort * pLength);
-BOOL BoardGenerateFood(void);
+BOOL BoardGenerateFood(const ushort snakeLength);
 void BoardGetMidPoint(Point * pPoint);
 
 #endif // !BOARD_H
