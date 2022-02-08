@@ -18,4 +18,7 @@ extern const ushort SNAKE_GRADIENT_LENGTH;
 // Initial snake length
 extern const ushort SNAKE_INIT_LENGTH;
 
+// Calculate the size of array a
+#define ARRAY_SIZE(a) sizeof(a)/sizeof(a[0])
+
 #endif // !GLOBALS_H

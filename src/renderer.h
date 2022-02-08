@@ -6,11 +6,6 @@
 
 #include "types.h"
 
-static SDL_Window * pWindow = NULL;
-//static SDL_Surface * pSurface = NULL;
-static SDL_Renderer * pRenderer = NULL;
-static TTF_Font * pFont = NULL;
-
 BOOL RendererInitialise(void);
 void RendererFree(void);
 void RendererClear(void);

@@ -1,6 +1,7 @@
 #include <time.h>
 
 #include "renderer.h"
+#include "game.h"
 
 int main(int argc, char * argv[])
 {

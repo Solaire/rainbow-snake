@@ -3,10 +3,16 @@
 #include "globals.h"
 #include "renderer.h"
 
+// Internal variables
+static uchar * pCellArr;
+
+// Internal functions
+static short ToIndex(const ushort x, const ushort y);
+
 // Calculate the buffer index using x/y coordinates
-static short ToIndex(const ushort x, const ushort y, const ushort width)
+static short ToIndex(const ushort x, const ushort y)
 {
-    return (y * width) + x;
+    return (y * BOARD_WIDTH) + x;
 }
 
 // Initialise the board resources
@@ -126,7 +132,7 @@ BOOL BoardIsTileFree(const ushort x, const ushort y)
 {
     if(x < BOARD_WIDTH && y < BOARD_HEIGHT)
     {
-        const short INDEX = ToIndex(x, y, BOARD_WIDTH);
+        const short INDEX = ToIndex(x, y);
         return (pCellArr[INDEX] == (uchar)cTypeFree);
     }
     return FALSE;
@@ -138,7 +144,7 @@ void BoardSetCell(const ushort x, const ushort y, const Celltype cell)
 {
     if(x < BOARD_WIDTH && y < BOARD_HEIGHT)
     {
-        pCellArr[ToIndex(x, y, BOARD_WIDTH)] = cell;
+        pCellArr[ToIndex(x, y)] = cell;
     }
 }
 
@@ -147,7 +153,7 @@ Celltype BoardGetCell(const ushort x, const ushort y)
 {
     if(x < BOARD_WIDTH && y < BOARD_HEIGHT)
     {
-        return pCellArr[ToIndex(x, y, BOARD_WIDTH)];
+        return pCellArr[ToIndex(x, y)];
     }
     return cTypeFree;
 }
@@ -182,7 +188,7 @@ void BoardGetFreeCells(const ushort snakeLength, Point ** ppArr, ushort * pLengt
     {
         for(ushort y = 0; y < BOARD_HEIGHT; y++)
         {
-            const short INDEX = ToIndex(x, y, BOARD_WIDTH);
+            const short INDEX = ToIndex(x, y);
             if(pCellArr[INDEX] == (uchar)cTypeFree)
             {
                 pPointArr[i].x = x;

@@ -4,13 +4,34 @@
 #include "globals.h"
 
 #include <SDL2/SDL_ttf.h>
-
-#define ARR_SIZE(a) sizeof(a)/sizeof(a[0])
+#include <SDL2/SDL_rect.h>
 
 // Shared constants
 #define STRING_TABLE_LENGTH 4
 #define MAX_STRING_LENGTH 10
 
+// Structure defining a single element
+typedef struct
+{
+    char displayName[25];
+    SDL_Rect area;
+    GameState state;
+} MenuElement;
+
+// Internal variables
+static char menuTitle[25];
+static MenuElement * pElementArr = NULL;
+static uchar maxCount;
+static uchar currentCount;
+static uchar currentSelection;
+static GameState menuType;
+
+// Internal functions
+static void MenuAddElement(const MenuElement element);
+static void InitialiseMenuElements(void);
+static void DrawText(char * pText, const SDL_Color colour, const ushort x, const ushort y, const BOOL isTitle);
+
+// Internal constants
 // String table
 static const char MENU_STRING_TABLE[STRING_TABLE_LENGTH][MAX_STRING_LENGTH] =
 {
@@ -155,20 +176,19 @@ GameState MenuGetType(void)
 void MenuDraw(void)
 {
     // If pause or game over, draw a semi-transparent background
-    //if(menuType != cStateMenu)
-    if(FALSE)
+    if(menuType == cStatePause)
     {
         int windowWidth = 0;
         int windowHeight = 0;
         RendererGetWindowSize(&windowWidth, &windowHeight);
 
         SDL_Rect r;
-        r.x = (windowWidth / 2) - ((BOARD_WIDTH * CELL_SIZE) / 2);
-        r.y = (windowHeight / 2) - ((BOARD_HEIGHT * CELL_SIZE) / 2);
-        r.w = (BOARD_WIDTH * CELL_SIZE) + 1;
-        r.h = (BOARD_HEIGHT * CELL_SIZE) + 1;
+        r.x = 0;
+        r.y = 0;
+        r.w = windowWidth;
+        r.h = windowWidth;
 
-        SDL_SetRenderDrawColor(GetRenderer(), 0, 0, 0, SDL_ALPHA_TRANSPARENT);
+        SDL_SetRenderDrawColor(GetRenderer(), 0, 0, 0, 128);
         SDL_RenderFillRect(GetRenderer(), &r);
     }
 
@@ -181,14 +201,14 @@ void MenuDraw(void)
     int windowWidth = 0;
     int windowHeight = 0;
     RendererGetWindowSize(&windowWidth, &windowHeight);
-    DrawText(menuTitle, colour, (windowWidth / 2) - 100, (windowHeight / 2) - 200);
+    DrawText(menuTitle, colour, windowWidth / 2, windowHeight / 2, TRUE);
 
     for(uchar i = 0; i < currentCount; i++)
     {
         colour.g = (i == currentSelection) ? 0 : 255;
         colour.b = (i == currentSelection) ? 0 : 255;
         colour.a = SDL_ALPHA_OPAQUE;
-        DrawText(pElementArr[i].displayName, colour, pElementArr[i].area.x, pElementArr[i].area.y);
+        DrawText(pElementArr[i].displayName, colour, pElementArr[i].area.x, pElementArr[i].area.y, FALSE);
     }
 }
 
@@ -213,21 +233,21 @@ static void InitialiseMenuElements(void)
         case cStateMenu:
             pMenuStrings = MAIN_MENU_STRINGS;
             pMenuStates   = MAIN_MENU_STATES;
-            menuElementCount = ARR_SIZE(MAIN_MENU_STRINGS);
+            menuElementCount = ARRAY_SIZE(MAIN_MENU_STRINGS);
             strcpy(menuTitle, "Snake\0");
             break;
 
         case cStatePause:
             pMenuStrings = PAUSE_MENU_STRINGS;
             pMenuStates   = PAUSE_MENU_STATES;
-            menuElementCount = ARR_SIZE(PAUSE_MENU_STRINGS);
+            menuElementCount = ARRAY_SIZE(PAUSE_MENU_STRINGS);
             strcpy(menuTitle, "Pause\0");
         break;
 
         case cStateGameOver:
             pMenuStrings = GAME_OVER_MENU_STRINGS;
             pMenuStates   = GAME_OVER_MENU_STATES;
-            menuElementCount = ARR_SIZE(GAME_OVER_MENU_STRINGS);
+            menuElementCount = ARRAY_SIZE(GAME_OVER_MENU_STRINGS);
             strcpy(menuTitle, "Game over\0");
         break;
 
@@ -239,8 +259,7 @@ static void InitialiseMenuElements(void)
     int windowHeight = 0;
     RendererGetWindowSize(&windowWidth, &windowHeight);
 
-    const int X = (windowWidth / 2) - 100;
-    int y = (windowHeight / 2) - 100;
+    int y = (windowHeight / 2);// + 100;
 
 	for(int i = 0; i < menuElementCount; i++, y += 100)
     {
@@ -248,7 +267,7 @@ static void InitialiseMenuElements(void)
         memset(el.displayName, '\0', sizeof(el.displayName));
         strcpy(el.displayName, MENU_STRING_TABLE[(int)pMenuStrings[i]]);
 
-        el.area.x = X;
+        el.area.x = windowWidth / 2;
         el.area.y = y;
         TTF_SizeText(GetFont(), el.displayName, &el.area.w, &el.area.h);
         el.state = pMenuStates[i];
@@ -257,12 +276,25 @@ static void InitialiseMenuElements(void)
 }
 
 // Draw selected text
-static void DrawText(char * pText, const SDL_Color colour, const ushort x, const ushort y)
+static void DrawText(char * pText, const SDL_Color colour, const ushort x, const ushort y, const BOOL isTitle)
 {
     SDL_Rect r;
-    r.x = x;
-    r.y = y;
     TTF_SizeText(GetFont(), pText, &r.w, &r.h);
+
+    if(isTitle)
+    {
+        r.y -= r.h;
+        r.w *= 2;
+        r.h *= 2;
+    }
+
+    r.x = x - (r.w / 2);
+    r.y = y - (r.h * 1.5);
+
+    if(isTitle)
+    {
+        r.y -= (r.h / 2);
+    }
 
     SDL_Surface * pTextSurface = TTF_RenderText_Solid(GetFont(), pText, colour);
     SDL_Texture * pTextTexture = SDL_CreateTextureFromSurface(GetRenderer(), pTextSurface);

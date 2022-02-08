@@ -3,6 +3,34 @@
 #include "board.h"
 #include "globals.h"
 
+#include "types.h"
+#include "snake.h"
+#include "menu.h"
+
+#include <SDL2/SDL_keyboard.h>
+
+// Enum representing snake's speed range
+// and the default game update logic rate
+typedef enum
+{
+    cSpeedMin = 1,
+    cSpeedMax = 12,
+    cRefresh  = 60
+} GameTicks;
+
+// Internal variables
+static GameState state;
+static ushort    snakeLength;
+static BOOL      isVictory;
+static double    timer;
+
+// Internal functions
+static void GetInput(SDL_Keycode * pKeycode);
+static void GameStateMenu(const SDL_Keycode keycode);
+static void GameStatePlay(const SDL_Keycode keycode);
+static void GameStateGameOver(const SDL_Keycode keycode);
+static void GameReset(void);
+
 // Initialise game board and the snake
 void GameInitialise(void)
 {
@@ -150,7 +178,6 @@ static void GameStatePlay(const SDL_Keycode keycode)
 #ifdef DEBUG
         case SDLK_KP_PLUS:
             SnakeAddBodyPart();
-            printf("Snake length: %u\n", SnakeGetLength());
             break;
 #endif // DEBUG
 

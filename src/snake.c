@@ -2,6 +2,32 @@
 #include "globals.h"
 #include "renderer.h"
 
+// RGB struct
+typedef struct
+{
+    uchar r;
+    uchar g;
+    uchar b;
+} RGB;
+
+// Internal variables
+static Direction direction;
+static ushort length;
+static ushort speed;
+static BOOL isActive;
+static RGB * pColourArr;
+static SnakePart * pHead;
+static SnakePart * pTail;
+
+// Internal linked-list functions
+static void SnakePartPushHead(const Point point);
+static void SnakePartPushTail(const Point point);
+static SnakePart * SnakePartPopHead(void);
+static SnakePart * SnakePartPopTail(void);
+static unsigned short SnakePartLength(void);
+static void SnakePartFree(void);
+static BOOL SnakePartIsEmpty(void);
+
 // Create new SnakePart node with specified point
 // Set new head pointer
 static void SnakePartPushHead(const Point point)
@@ -175,9 +201,9 @@ void SnakeInitialise(Point initialPoint, const ushort initialLength)
         pColourArr[i] = rgb;
     }
 
-    // Add 5 snake parts
+    // Add the snake parts
     SnakePartPushHead(initialPoint);
-    for(ushort i = 0; i < initialLength; i++)
+    for(ushort i = 1; i < initialLength; i++)
     {
         initialPoint.x--;
         SnakePartPushTail(initialPoint);
@@ -269,11 +295,6 @@ void SnakeGetNextPos(Point * pNewPoint)
 void SnakeAddBodyPart(void)
 {
     SnakePartPushTail(pTail->point);
-    length++;
-    if(length % 5 == 0)
-    {
-        speed = fmin(++speed, 1);
-    }
 }
 
 // Draw the snake

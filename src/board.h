@@ -3,8 +3,6 @@
 
 #include "types.h"
 
-static short ToIndex(const ushort x, const ushort y, const ushort width);
-
 typedef enum
 {
     cTypeFree = 0,
@@ -12,8 +10,6 @@ typedef enum
     cTypeSnake = 2,
     cTypeFood = 3,
 } Celltype;
-
-static uchar * pCellArr;
 
 void BoardInitialise(void);
 void BoardFree(void);

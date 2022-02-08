@@ -1,9 +1,9 @@
 #include "globals.h"
 
 // Game area dimensions
-const ushort BOARD_WIDTH  = 4;
-const ushort BOARD_HEIGHT = 4;
-const ushort CELL_SIZE    = 100;
+const ushort BOARD_WIDTH  = 10;
+const ushort BOARD_HEIGHT = 10;
+const ushort CELL_SIZE    = 40;
 
 // Game definitions
 const double FPS = 60.0;

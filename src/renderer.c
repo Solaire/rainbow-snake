@@ -1,6 +1,11 @@
 #include "renderer.h"
 #include <stdio.h>
 
+// "Private" variables
+static SDL_Window * pWindow = NULL;
+static SDL_Renderer * pRenderer = NULL;
+static TTF_Font * pFont = NULL;
+
 // Create the game window.
 // Initialise the font and renderer
 // Return false if initialisation fails
@@ -30,6 +35,7 @@ BOOL RendererInitialise(void)
     {
         goto InitialiseRenderer_error;
     }
+    SDL_SetRenderDrawBlendMode(pRenderer, SDL_BLENDMODE_BLEND);
     if(TTF_Init() != 0)
     {
         goto InitialiseRenderer_error;

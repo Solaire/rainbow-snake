@@ -14,14 +14,6 @@ typedef enum
     cDirectionRight = 4,
 } Direction;
 
-// RGB struct
-typedef struct
-{
-    uchar r;
-    uchar g;
-    uchar b;
-} RGB;
-
 // Snake node as a doubly linked-list
 struct SnakePart
 {
@@ -31,24 +23,6 @@ struct SnakePart
 };
 
 typedef struct SnakePart SnakePart;
-
-// Some linked-list management functions
-static void SnakePartPushHead(const Point point);
-static void SnakePartPushTail(const Point point);
-static SnakePart * SnakePartPopHead(void);
-static SnakePart * SnakePartPopTail(void);
-static unsigned short SnakePartLength(void);
-static void SnakePartFree(void);
-static BOOL SnakePartIsEmpty(void);
-
-static Direction direction;
-static ushort length;
-static ushort speed;
-static BOOL isActive;
-
-static RGB * pColourArr;
-static SnakePart * pHead;
-static SnakePart * pTail;
 
 void SnakeInitialise(Point initialPoint, const ushort initialLength);
 void SnakeFree(void);
