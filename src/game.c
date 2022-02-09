@@ -7,6 +7,7 @@
 #include "snake.h"
 #include "menu.h"
 
+#include <stdio.h>
 #include <SDL2/SDL_keyboard.h>
 
 // Enum representing snake's speed range
@@ -28,7 +29,6 @@ static ushort    score;
 static void GetInput(SDL_Keycode * pKeycode);
 static void GameStateMenu(const SDL_Keycode keycode);
 static void GameStatePlay(const SDL_Keycode keycode);
-static void GameStateGameOver(const SDL_Keycode keycode);
 static void GameVictoryDefeat(const SDL_Keycode keycode);
 static void GameReset(void);
 static void DrawScore(void);
@@ -278,9 +278,6 @@ static void DrawVictoryDefeat(void)
     RendererGetWindowSize(&windowWidth, &windowHeight);
 
     char * pMainText = (state == cStateVictory) ? "VICTORY" : "DEFEAT";
-
-    const int Y = fmax(windowHeight / 4, (windowHeight / 2) - ((BOARD_HEIGHT * CELL_SIZE) / 2));
-
     RendererDrawText(pMainText, colour, windowWidth / 2, windowHeight / 4, FALSE);
 
     char * pPromptText = "Press <Enter> or <Escape> to continue";
@@ -297,7 +294,7 @@ static void DrawScore(void)
 
     // Construct the score string
     char text[25];
-    snprintf(text, 25, "SCORE: %0*d", strlen(pad), score);
+    snprintf(text, 25, "SCORE: %0*d", (int)strlen(pad), score);
 
     int windowWidth = 0;
     int windowHeight = 0;

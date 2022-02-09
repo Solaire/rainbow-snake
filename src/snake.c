@@ -12,6 +12,7 @@ typedef struct
 
 // Internal variables
 static Direction direction;
+static Direction tempDirection;
 static ushort length;
 static ushort speed;
 static BOOL isActive;
@@ -27,6 +28,7 @@ static SnakePart * SnakePartPopTail(void);
 static unsigned short SnakePartLength(void);
 static void SnakePartFree(void);
 static BOOL SnakePartIsEmpty(void);
+static void SnakeGetNextPos(Point * pNewPoint);
 
 // Create new SnakePart node with specified point
 // Set new head pointer
@@ -141,6 +143,7 @@ void SnakeInitialise(Point initialPoint, const ushort initialLength)
 {
     // Snake resources
     direction   = cDirectionRight;
+    tempDirection = direction;
     length      = initialLength;
     speed       = 1;
     isActive    = FALSE;
@@ -230,6 +233,10 @@ void SnakeMove(void)
     {
         return;
     }
+    if( abs((char)tempDirection - (char)direction) > 1 )
+    {
+        direction = tempDirection;
+    }
 
     // No point updating the whole snake.
     // Remove the tail and add a new head node.
@@ -248,10 +255,13 @@ void SnakeMove(void)
 // Ignore if new direction is opposite of current
 void SnakeChangeDirection(const Direction newDirection)
 {
+    tempDirection = newDirection;
+    /*
     if( abs((char)newDirection - (char)direction) > 1 )
     {
         direction = newDirection;
     }
+    */
     if(!isActive)
     {
         isActive = TRUE;
@@ -259,7 +269,7 @@ void SnakeChangeDirection(const Direction newDirection)
 }
 
 // Determine the snake's next head position based on direction
-void SnakeGetNextPos(Point * pNewPoint)
+static void SnakeGetNextPos(Point * pNewPoint)
 {
     if(!pHead)
     {

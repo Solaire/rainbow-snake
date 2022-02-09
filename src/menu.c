@@ -209,8 +209,8 @@ static void MenuAddElement(const MenuElement element)
 // Initialise menu elements
 static void InitialiseMenuElements(void)
 {
-    StringIndex * pMenuStrings = NULL;
-    GameState   * pMenuStates  = NULL;
+    const StringIndex * pMenuStrings = NULL;
+    const GameState   * pMenuStates  = NULL;
     int    menuElementCount = 0;
 
     switch(menuType)

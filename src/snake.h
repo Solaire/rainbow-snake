@@ -28,7 +28,6 @@ void SnakeInitialise(Point initialPoint, const ushort initialLength);
 void SnakeFree(void);
 void SnakeMove(void);
 void SnakeChangeDirection(const Direction newDirection);
-void SnakeGetNextPos(Point * pNewPoint);
 void SnakeAddBodyPart(void);
 void SnakeDraw(void);
 ushort SnakeGetLength(void);
