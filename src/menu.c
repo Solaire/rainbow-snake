@@ -79,20 +79,6 @@ static const GameState PAUSE_MENU_STATES[] =
     cStateExit
 };
 
-// Game over menu strings
-static const StringIndex GAME_OVER_MENU_STRINGS[] =
-{
-    cStringMainMenu,
-    cStringExit
-};
-
-// Game over menu states
-static const GameState GAME_OVER_MENU_STATES[] =
-{
-    cStateMenu,
-    cStateExit
-};
-
 // Initialise the menu of specified type
 // Add menu elements
 void MenuInitialise(const GameState initialType)
@@ -243,13 +229,6 @@ static void InitialiseMenuElements(void)
             strcpy(menuTitle, "Pause\0");
         break;
 
-        case cStateGameOver:
-            pMenuStrings = GAME_OVER_MENU_STRINGS;
-            pMenuStates   = GAME_OVER_MENU_STATES;
-            menuElementCount = ARRAY_SIZE(GAME_OVER_MENU_STRINGS);
-            strcpy(menuTitle, "Game over\0");
-        break;
-
         default:
             return;
     }
@@ -258,7 +237,7 @@ static void InitialiseMenuElements(void)
     int windowHeight = 0;
     RendererGetWindowSize(&windowWidth, &windowHeight);
 
-    int y = (windowHeight / 2);// + 100;
+    int y = (windowHeight / 2);
 
 	for(int i = 0; i < menuElementCount; i++, y += 100)
     {

@@ -21,7 +21,6 @@ typedef enum
 // Internal variables
 static GameState state;
 static ushort    snakeLength;
-static BOOL      isVictory;
 static double    timer;
 static ushort    score;
 
@@ -30,8 +29,10 @@ static void GetInput(SDL_Keycode * pKeycode);
 static void GameStateMenu(const SDL_Keycode keycode);
 static void GameStatePlay(const SDL_Keycode keycode);
 static void GameStateGameOver(const SDL_Keycode keycode);
+static void GameVictoryDefeat(const SDL_Keycode keycode);
 static void GameReset(void);
 static void DrawScore(void);
+static void DrawVictoryDefeat(void);
 
 // Initialise game board and the snake
 void GameInitialise(void)
@@ -68,12 +69,16 @@ void GameRun(void)
         {
             case cStateMenu:
             case cStatePause:
-            case cStateGameOver:
                 GameStateMenu(keycode);
                 break;
 
             case cStatePlay:
                 GameStatePlay(keycode);
+                break;
+
+            case cStateVictory:
+            case cStateDefeat:
+                GameVictoryDefeat(keycode);
                 break;
 
             case cStateExit:
@@ -87,20 +92,19 @@ void GameRun(void)
             return;
         }
 
-        if(isVictory)
-        {
-            state = cStateGameOver;
-        }
-
         if(state != cStateMenu)
         {
             DrawScore();
             BoardDraw();
             SnakeDraw();
         }
-        if(state == cStateMenu || state == cStatePause || state == cStateGameOver)
+        if(state == cStateMenu || state == cStatePause)
         {
             MenuDraw();
+        }
+        if(state == cStateVictory || state == cStateDefeat)
+        {
+            DrawVictoryDefeat();
         }
 
         RendererDraw();
@@ -188,7 +192,7 @@ static void GameStatePlay(const SDL_Keycode keycode)
             break;
     }
 
-    if(!SnakeIsActive() || isVictory || timer < (1.0 / SnakeGetSpeed()) * 1000)
+    if(!SnakeIsActive() || (state == cStateVictory || state == cStateDefeat) || timer < (1.0 / SnakeGetSpeed()) * 1000)
     {
         return;
     }
@@ -220,13 +224,12 @@ static void GameStatePlay(const SDL_Keycode keycode)
     }
     else if(CELL == cTypeSnake || !SnakeInBounds())
     {
-        isVictory = FALSE;
-        state = cStateGameOver;
+        state = cStateDefeat;
     }
     BoardSetCell(HEAD_POINT.x, HEAD_POINT.y, cTypeSnake);
-    if(newFood)
+    if(newFood && !BoardGenerateFood(SnakeGetLength()))
     {
-        isVictory = !BoardGenerateFood(SnakeGetLength());
+        state = cStateVictory;
     }
 }
 
@@ -251,9 +254,37 @@ static void GameReset(void)
     BoardGenerateFood(SNAKE_INIT_LENGTH);
 
     snakeLength = SnakeGetLength();
-    isVictory   = FALSE;
     timer       = 0.0;
     score       = 0;
+}
+
+static void GameVictoryDefeat(const SDL_Keycode keycode)
+{
+    if(keycode == SDLK_RETURN || keycode == SDLK_ESCAPE)
+    {
+        state = cStateMenu;
+    }
+}
+
+static void DrawVictoryDefeat(void)
+{
+    SDL_Color colour;
+    colour.r = 255;
+    colour.g = 255;
+    colour.b = 255;
+
+    int windowWidth = 0;
+    int windowHeight = 0;
+    RendererGetWindowSize(&windowWidth, &windowHeight);
+
+    char * pMainText = (state == cStateVictory) ? "VICTORY" : "DEFEAT";
+
+    const int Y = fmax(windowHeight / 4, (windowHeight / 2) - ((BOARD_HEIGHT * CELL_SIZE) / 2));
+
+    RendererDrawText(pMainText, colour, windowWidth / 2, windowHeight / 4, FALSE);
+
+    char * pPromptText = "Press <Enter> or <Escape> to continue";
+    RendererDrawText(pPromptText, colour, windowWidth / 2, windowHeight, FALSE);
 }
 
 // Draw the current score in the top-left corner

@@ -22,11 +22,12 @@ typedef unsigned int uint;
 // Also used to determine menu type
 typedef enum
 {
-    cStateMenu = 0,
-    cStatePlay = 1,
-    cStatePause = 2,
-    cStateGameOver = 3,
-    cStateExit = 4,
+    cStateMenu      = 0,
+    cStatePlay      = 1,
+    cStatePause     = 2,
+    cStateVictory   = 3,
+    cStateDefeat    = 4,
+    cStateExit      = 5,
 } GameState;
 
 // Shared structures
