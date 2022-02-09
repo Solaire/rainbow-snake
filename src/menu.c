@@ -29,7 +29,6 @@ static GameState menuType;
 // Internal functions
 static void MenuAddElement(const MenuElement element);
 static void InitialiseMenuElements(void);
-static void DrawText(char * pText, const SDL_Color colour, const ushort x, const ushort y, const BOOL isTitle);
 
 // Internal constants
 // String table
@@ -201,14 +200,14 @@ void MenuDraw(void)
     int windowWidth = 0;
     int windowHeight = 0;
     RendererGetWindowSize(&windowWidth, &windowHeight);
-    DrawText(menuTitle, colour, windowWidth / 2, windowHeight / 2, TRUE);
+    RendererDrawText(menuTitle, colour, windowWidth / 2, windowHeight / 2, TRUE);
 
     for(uchar i = 0; i < currentCount; i++)
     {
         colour.g = (i == currentSelection) ? 0 : 255;
         colour.b = (i == currentSelection) ? 0 : 255;
         colour.a = SDL_ALPHA_OPAQUE;
-        DrawText(pElementArr[i].displayName, colour, pElementArr[i].area.x, pElementArr[i].area.y, FALSE);
+        RendererDrawText(pElementArr[i].displayName, colour, pElementArr[i].area.x, pElementArr[i].area.y, FALSE);
     }
 }
 
@@ -273,32 +272,4 @@ static void InitialiseMenuElements(void)
         el.state = pMenuStates[i];
         MenuAddElement(el);
     }
-}
-
-// Draw selected text
-static void DrawText(char * pText, const SDL_Color colour, const ushort x, const ushort y, const BOOL isTitle)
-{
-    SDL_Rect r;
-    TTF_SizeText(GetFont(), pText, &r.w, &r.h);
-
-    if(isTitle)
-    {
-        r.y -= r.h;
-        r.w *= 2;
-        r.h *= 2;
-    }
-
-    r.x = x - (r.w / 2);
-    r.y = y - (r.h * 1.5);
-
-    if(isTitle)
-    {
-        r.y -= (r.h / 2);
-    }
-
-    SDL_Surface * pTextSurface = TTF_RenderText_Solid(GetFont(), pText, colour);
-    SDL_Texture * pTextTexture = SDL_CreateTextureFromSurface(GetRenderer(), pTextSurface);
-    SDL_RenderCopy(GetRenderer(), pTextTexture, NULL, &r);
-    SDL_FreeSurface(pTextSurface);
-    SDL_DestroyTexture(pTextTexture);
 }

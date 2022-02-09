@@ -23,6 +23,7 @@ static GameState state;
 static ushort    snakeLength;
 static BOOL      isVictory;
 static double    timer;
+static ushort    score;
 
 // Internal functions
 static void GetInput(SDL_Keycode * pKeycode);
@@ -30,6 +31,7 @@ static void GameStateMenu(const SDL_Keycode keycode);
 static void GameStatePlay(const SDL_Keycode keycode);
 static void GameStateGameOver(const SDL_Keycode keycode);
 static void GameReset(void);
+static void DrawScore(void);
 
 // Initialise game board and the snake
 void GameInitialise(void)
@@ -92,6 +94,7 @@ void GameRun(void)
 
         if(state != cStateMenu)
         {
+            DrawScore();
             BoardDraw();
             SnakeDraw();
         }
@@ -213,6 +216,7 @@ static void GameStatePlay(const SDL_Keycode keycode)
     {
         SnakeAddBodyPart();
         newFood = TRUE;
+        score += 5;
     }
     else if(CELL == cTypeSnake || !SnakeInBounds())
     {
@@ -249,4 +253,28 @@ static void GameReset(void)
     snakeLength = SnakeGetLength();
     isVictory   = FALSE;
     timer       = 0.0;
+    score       = 0;
+}
+
+// Draw the current score in the top-left corner
+static void DrawScore(void)
+{
+    // We want to pad the score to look like this (0005)
+    // Determine maximum possible score
+    char pad[10];
+    sprintf(pad, "%d", BOARD_WIDTH * BOARD_HEIGHT * 5);
+
+    // Construct the score string
+    char text[25];
+    snprintf(text, 25, "SCORE: %0*d", strlen(pad), score);
+
+    int windowWidth = 0;
+    int windowHeight = 0;
+    RendererGetWindowSize(&windowWidth, &windowHeight);
+
+    SDL_Color colour;
+    colour.r = 255;
+    colour.g = 255;
+    colour.b = 255;
+    RendererDrawText(text, colour, windowWidth / 2, windowHeight / 8, FALSE);
 }

@@ -107,3 +107,31 @@ TTF_Font * GetFont(void)
 {
     return pFont;
 }
+
+// Draw selected text
+void RendererDrawText(char * pText, const SDL_Color colour, const ushort x, const ushort y, const BOOL isTitle)
+{
+    SDL_Rect r;
+    TTF_SizeText(pFont, pText, &r.w, &r.h);
+
+    if(isTitle)
+    {
+        r.y -= r.h;
+        r.w *= 2;
+        r.h *= 2;
+    }
+
+    r.x = x - (r.w / 2);
+    r.y = y - (r.h * 1.5);
+
+    if(isTitle)
+    {
+        r.y -= (r.h / 2);
+    }
+
+    SDL_Surface * pTextSurface = TTF_RenderText_Solid(pFont, pText, colour);
+    SDL_Texture * pTextTexture = SDL_CreateTextureFromSurface(pRenderer, pTextSurface);
+    SDL_RenderCopy(pRenderer, pTextTexture, NULL, &r);
+    SDL_FreeSurface(pTextSurface);
+    SDL_DestroyTexture(pTextTexture);
+}

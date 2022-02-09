@@ -11,6 +11,7 @@ void RendererFree(void);
 void RendererClear(void);
 void RendererDraw(void);
 void RendererGetWindowSize(int * pW, int * pH);
+void RendererDrawText(char * pText, const SDL_Color colour, const ushort x, const ushort y, const BOOL isTitle);
 
 SDL_Renderer * GetRenderer(void);
 TTF_Font * GetFont(void);
