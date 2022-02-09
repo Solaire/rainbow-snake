@@ -419,7 +419,7 @@ BOOL SnakeInBounds(void)
     return ( (HEAD_POINT.x >= 0 && HEAD_POINT.y >= 0) && (HEAD_POINT.x < BOARD_WIDTH && HEAD_POINT.y < BOARD_HEIGHT) );
 }
 
-void SnakeUpdateDirection(void)
+BOOL SnakeUpdateDirection(void)
 {
     if( abs((char)tempDirection - (char)direction) > 1 )
     {

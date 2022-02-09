@@ -40,6 +40,16 @@ void BoardDraw(void)
 
     const int OFFSET_X = (windowWidth / 2) - ((BOARD_WIDTH * CELL_SIZE) / 2);
     const int OFFSET_Y = (windowHeight / 2) - ((BOARD_HEIGHT * CELL_SIZE) / 2);
+    const ushort CELL_PADDING = CELL_SIZE / 5;
+
+    // Draw the border around the board
+    SDL_SetRenderDrawColor(pRenderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
+    SDL_Rect r;
+    r.x = OFFSET_X - CELL_PADDING;
+    r.y = OFFSET_Y - CELL_PADDING;
+    r.w = (BOARD_WIDTH * CELL_SIZE) + (CELL_PADDING * 2);
+    r.h = (BOARD_HEIGHT * CELL_SIZE) + (CELL_PADDING * 2);
+    SDL_RenderFillRect(pRenderer, &r);
 
     for(ushort x = 0; x < BOARD_WIDTH; x++)
     {
@@ -49,7 +59,6 @@ void BoardDraw(void)
             if(CURRENT == cTypeWall)
             {
                 SDL_SetRenderDrawColor(pRenderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
-                const ushort CELL_PADDING = CELL_SIZE / 5;
 
                 // Evil macro function
                 // Draw the wall segments for the edges
@@ -100,7 +109,7 @@ void BoardDraw(void)
             #endif // DEBUG
             else
             {
-                SDL_SetRenderDrawColor(pRenderer, 0, 0, 255, SDL_ALPHA_OPAQUE);
+                SDL_SetRenderDrawColor(pRenderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
             }
 
             SDL_Rect r;

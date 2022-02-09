@@ -36,7 +36,7 @@ SnakePart * SnakeGetTail(void);
 ushort SnakeGetSpeed(void);
 BOOL SnakeIsActive(void);
 BOOL SnakeInBounds(void);
-void SnakeUpdateDirection(void);
+BOOL SnakeUpdateDirection(void);
 void SnakeGetNextPos(Point * pNewPoint);
 
 #endif // !SNAKE_H

@@ -207,13 +207,13 @@ static void GameStatePlay(const SDL_Keycode keycode)
     }
     printf("tick\n");
     timer = 0.0;
-    SnakeUpdateDirection();
+    const BOOL HAS_DIRECTION_CHANGED = SnakeUpdateDirection();
 
     Point snakeNextPos;
     SnakeGetNextPos(&snakeNextPos);
 
     const Celltype NEXT_CELL = BoardGetCell(snakeNextPos.x, snakeNextPos.y);
-    const BOOL IS_ABOUT_TO_LOSE = (NEXT_CELL == cTypeSnake) || ( (snakeNextPos.x < 0 || snakeNextPos.x >= BOARD_WIDTH) || (snakeNextPos.y < 0 || snakeNextPos.y >= BOARD_HEIGHT) );
+    const BOOL IS_ABOUT_TO_LOSE = !HAS_DIRECTION_CHANGED && ((NEXT_CELL == cTypeSnake) || ( (snakeNextPos.x < 0 || snakeNextPos.x >= BOARD_WIDTH) || (snakeNextPos.y < 0 || snakeNextPos.y >= BOARD_HEIGHT) ));
 
     // Handle the "warning" period
     if( IS_ABOUT_TO_LOSE && warningFrames++ < WARNING_FRAMES_ALLOWANCE)
