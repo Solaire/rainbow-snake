@@ -19,11 +19,20 @@ typedef enum
     cRefresh  = 60
 } GameTicks;
 
+// Inspired by the old Nokia snake
+// In order to be slightly less annoying, the game will
+// essentially pause itself for specified number of frames
+// if the player is about to lose
+// This "warning" time is quite significant on lower speeds (+ 1 second)
+// but on higher speeds it might be pretty insignificant
+static const uchar WARNING_FRAMES_ALLOWANCE = 1;
+
 // Internal variables
 static GameState state;
 static ushort    snakeLength;
 static double    timer;
 static ushort    score;
+static uchar     warningFrames;
 
 // Internal functions
 static void GetInput(SDL_Keycode * pKeycode);
@@ -196,7 +205,22 @@ static void GameStatePlay(const SDL_Keycode keycode)
     {
         return;
     }
+    printf("tick\n");
     timer = 0.0;
+    SnakeUpdateDirection();
+
+    Point snakeNextPos;
+    SnakeGetNextPos(&snakeNextPos);
+
+    const Celltype NEXT_CELL = BoardGetCell(snakeNextPos.x, snakeNextPos.y);
+    const BOOL IS_ABOUT_TO_LOSE = (NEXT_CELL == cTypeSnake) || ( (snakeNextPos.x < 0 || snakeNextPos.x >= BOARD_WIDTH) || (snakeNextPos.y < 0 || snakeNextPos.y >= BOARD_HEIGHT) );
+
+    // Handle the "warning" period
+    if( IS_ABOUT_TO_LOSE && warningFrames++ < WARNING_FRAMES_ALLOWANCE)
+    {
+        return;
+    }
+    warningFrames = 0;
 
     // If snake has just eaten, the board state and snake might be out of sync
     // causing the food to spawn on the snake's tail
@@ -256,6 +280,7 @@ static void GameReset(void)
     snakeLength = SnakeGetLength();
     timer       = 0.0;
     score       = 0;
+    warningFrames = 0;
 }
 
 static void GameVictoryDefeat(const SDL_Keycode keycode)

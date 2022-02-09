@@ -28,7 +28,6 @@ static SnakePart * SnakePartPopTail(void);
 static unsigned short SnakePartLength(void);
 static void SnakePartFree(void);
 static BOOL SnakePartIsEmpty(void);
-static void SnakeGetNextPos(Point * pNewPoint);
 
 // Create new SnakePart node with specified point
 // Set new head pointer
@@ -233,10 +232,7 @@ void SnakeMove(void)
     {
         return;
     }
-    if( abs((char)tempDirection - (char)direction) > 1 )
-    {
-        direction = tempDirection;
-    }
+    SnakeUpdateDirection();
 
     // No point updating the whole snake.
     // Remove the tail and add a new head node.
@@ -256,12 +252,6 @@ void SnakeMove(void)
 void SnakeChangeDirection(const Direction newDirection)
 {
     tempDirection = newDirection;
-    /*
-    if( abs((char)newDirection - (char)direction) > 1 )
-    {
-        direction = newDirection;
-    }
-    */
     if(!isActive)
     {
         isActive = TRUE;
@@ -269,7 +259,7 @@ void SnakeChangeDirection(const Direction newDirection)
 }
 
 // Determine the snake's next head position based on direction
-static void SnakeGetNextPos(Point * pNewPoint)
+void SnakeGetNextPos(Point * pNewPoint)
 {
     if(!pHead)
     {
@@ -427,4 +417,12 @@ BOOL SnakeInBounds(void)
 {
     const Point HEAD_POINT = pHead->point;
     return ( (HEAD_POINT.x >= 0 && HEAD_POINT.y >= 0) && (HEAD_POINT.x < BOARD_WIDTH && HEAD_POINT.y < BOARD_HEIGHT) );
+}
+
+void SnakeUpdateDirection(void)
+{
+    if( abs((char)tempDirection - (char)direction) > 1 )
+    {
+        direction = tempDirection;
+    }
 }

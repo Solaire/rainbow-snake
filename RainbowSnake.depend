@@ -23,12 +23,12 @@
 1643043605 c:\dev\rainbowsnake\src\gameboard.h
 	"SDL2/SDL.h"
 
-1644434369 source:c:\dev\rainbowsnake\src\snake.c
+1644445764 source:c:\dev\rainbowsnake\src\snake.c
 	"snake.h"
 	"globals.h"
 	"renderer.h"
 
-1644434237 c:\dev\rainbowsnake\src\snake.h
+1644445768 c:\dev\rainbowsnake\src\snake.h
 	"types.h"
 
 1644359727 source:c:\dev\rainbowsnake\src\main.c
@@ -55,7 +55,7 @@
 	"types.h"
 	<SDL2/SDL_keyboard.h>
 
-1644366946 source:c:\dev\rainbowsnake\src\menu.c
+1644444201 source:c:\dev\rainbowsnake\src\menu.c
 	"menu.h"
 	"renderer.h"
 	"globals.h"
