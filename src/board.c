@@ -1,10 +1,12 @@
 #include "board.h"
 
 #include "globals.h"
+#include "types.h"
 #include "renderer.h"
 
 // Internal variables
-static uchar * pCellArr;
+static Celltype cellArr[BOARD_WIDTH * BOARD_HEIGHT] = { cTypeFree };
+static Point freeCellArr[BOARD_WIDTH * BOARD_HEIGHT] = { 0 };
 
 // Internal functions
 static short ToIndex(const ushort x, const ushort y);
@@ -18,14 +20,15 @@ static short ToIndex(const ushort x, const ushort y)
 // Initialise the board resources
 void BoardInitialise(void)
 {
-    // calloc should set all values to 0 (cTypeFree)
-    pCellArr = (uchar *)calloc(BOARD_WIDTH * BOARD_HEIGHT, sizeof(uchar));
+    memset(cellArr, cTypeFree, sizeof(cellArr));
+    memset(freeCellArr, 0, sizeof(cellArr));
 }
 
 // Free the board resources
 void BoardFree(void)
 {
-    free(pCellArr);
+    memset(cellArr, cTypeFree, sizeof(cellArr));
+    memset(freeCellArr, 0, sizeof(cellArr));
 }
 
 // Draw the board
@@ -142,7 +145,7 @@ BOOL BoardIsTileFree(const ushort x, const ushort y)
     if(x < BOARD_WIDTH && y < BOARD_HEIGHT)
     {
         const short INDEX = ToIndex(x, y);
-        return (pCellArr[INDEX] == (uchar)cTypeFree);
+        return (cellArr[INDEX] == (uchar)cTypeFree);
     }
     return FALSE;
 }
@@ -153,7 +156,7 @@ void BoardSetCell(const ushort x, const ushort y, const Celltype cell)
 {
     if(x < BOARD_WIDTH && y < BOARD_HEIGHT)
     {
-        pCellArr[ToIndex(x, y)] = cell;
+        cellArr[ToIndex(x, y)] = cell;
     }
 }
 
@@ -162,7 +165,7 @@ Celltype BoardGetCell(const ushort x, const ushort y)
 {
     if(x < BOARD_WIDTH && y < BOARD_HEIGHT)
     {
-        return pCellArr[ToIndex(x, y)];
+        return cellArr[ToIndex(x, y)];
     }
     return cTypeFree;
 }
@@ -173,7 +176,7 @@ BOOL BoardIsComplete(void)
     ushort count = 0;
     for(int i = 0; i < BOARD_WIDTH * BOARD_HEIGHT; i++)
     {
-        if(pCellArr[i] == (uchar)cTypeFree)
+        if(cellArr[i] == (uchar)cTypeFree)
         {
             count++;
         }
@@ -182,40 +185,30 @@ BOOL BoardIsComplete(void)
 }
 
 // Find free cells and put their positions into the point array
-void BoardGetFreeCells(const ushort snakeLength, Point ** ppArr, ushort * pLength)
+void BoardGetFreeCells(const ushort snakeLength, uint * pLength)
 {
-    if(*ppArr)
-    {
-        free(ppArr);
-    }
+    *pLength = 0;
 
-    const uint INIT_LENGTH = (BOARD_WIDTH * BOARD_HEIGHT) - snakeLength;
-    Point * pPointArr = (Point *)malloc(INIT_LENGTH * sizeof(Point));
-
-    uint i = 0;
     for(ushort x = 0; x < BOARD_WIDTH; x++)
     {
         for(ushort y = 0; y < BOARD_HEIGHT; y++)
         {
             const short INDEX = ToIndex(x, y);
-            if(pCellArr[INDEX] == (uchar)cTypeFree)
+            if(cellArr[INDEX] == cTypeFree)
             {
-                pPointArr[i].x = x;
-                pPointArr[i].y = y;
-                i++;
+                freeCellArr[*pLength].x = x;
+                freeCellArr[*pLength].y = y;
+                (*pLength)++;
             }
         }
     }
-    *pLength = i;
-    *ppArr = pPointArr;
 }
 
 // Find random free cell and turn it into a food cell
 BOOL BoardGenerateFood(const ushort snakeLength)
 {
-    Point * pFreePoints = NULL;
-    ushort length = 0;
-    BoardGetFreeCells(snakeLength, &pFreePoints, &length);
+    uint length = 0;
+    BoardGetFreeCells(snakeLength, &length);
 
     if(length == 0)
     {
@@ -223,17 +216,12 @@ BOOL BoardGenerateFood(const ushort snakeLength)
     }
     if(length == 1)
     {
-        BoardSetCell(pFreePoints[0].x, pFreePoints[0].y, cTypeFood);
+        BoardSetCell(freeCellArr[0].x, freeCellArr[0].y, cTypeFood);
     }
     else
     {
-        const Point RAND_POINT = pFreePoints[rand() % length];
+        const Point RAND_POINT = freeCellArr[rand() % length];
         BoardSetCell(RAND_POINT.x, RAND_POINT.y, cTypeFood);
-    }
-
-    if(pFreePoints)
-    {
-        free(pFreePoints);
     }
     return TRUE;
 }

@@ -108,13 +108,13 @@ static SnakePart * SnakePartPopTail(void)
 // Return number of nodes in the linked-list
 static unsigned short SnakePartLength(void)
 {
-    ushort length = 0;
+    ushort snakeLength = 0;
     SnakePart * pCurrent = NULL;
     for(pCurrent = pHead; pCurrent; pCurrent = pCurrent->pNext)
     {
-        length++;
+        snakeLength++;
     }
-    return length;
+    return snakeLength;
 }
 
 // Free all linked-list nodes
@@ -295,6 +295,7 @@ void SnakeGetNextPos(Point * pNewPoint)
 void SnakeAddBodyPart(void)
 {
     SnakePartPushTail(pTail->point);
+    length++;
 }
 
 // Draw the snake

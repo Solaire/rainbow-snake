@@ -205,7 +205,6 @@ static void GameStatePlay(const SDL_Keycode keycode)
     {
         return;
     }
-    printf("tick\n");
     timer = 0.0;
     const BOOL HAS_DIRECTION_CHANGED = SnakeUpdateDirection();
 
