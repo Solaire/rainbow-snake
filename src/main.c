@@ -7,12 +7,13 @@ int main(int argc, char * argv[])
 {
     SDL_Init(SDL_INIT_VIDEO);
 
-    // Seed rng
+    // Seed RNG
     time_t t;
     srand((unsigned) time(&t));
 
     if(!RendererInitialise())
     {
+        SDL_Quit();
         return -1;
     }
     GameInitialise();

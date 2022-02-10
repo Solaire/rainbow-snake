@@ -79,8 +79,8 @@ static const GameState PAUSE_MENU_STATES[] =
     cStateExit
 };
 
-// Initialise the menu of specified type
-// Add menu elements
+// "Constructor"
+// Create menu elements
 void MenuInitialise(const GameState initialType)
 {
     currentCount     = 0;
@@ -92,7 +92,8 @@ void MenuInitialise(const GameState initialType)
     InitialiseMenuElements();
 }
 
-// Free menu resources
+// "Destructor"
+// Free menu elements
 void MenuFree(void)
 {
     if(pElementArr)

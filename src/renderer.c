@@ -41,11 +41,9 @@ BOOL RendererInitialise(void)
         goto InitialiseRenderer_error;
     }
 
-    //pFont = TTF_OpenFont("/home/kacper/dev/RainbowSnake/font.ttf", 64); // TODO: path and font size
-    pFont = TTF_OpenFont("C:\\dev\\RainbowSnake\\font.ttf", 64); // TODO: path and font size
+    pFont = TTF_OpenFont("font.ttf", 64);
     if(!pFont)
     {
-        printf("fail\n");
         goto InitialiseRenderer_error;
     }
 

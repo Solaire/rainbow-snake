@@ -35,23 +35,28 @@ static ushort    score;
 static uchar     warningFrames;
 
 // Internal functions
-static void GetInput(SDL_Keycode * pKeycode);
-static void GameStateMenu(const SDL_Keycode keycode);
-static void GameStatePlay(const SDL_Keycode keycode);
-static void GameVictoryDefeat(const SDL_Keycode keycode);
-static void GameReset(void);
+static SDL_Keycode GetInput(void);
+static void HandleStateMenu(const SDL_Keycode keycode);
+static void HandleStatePlay(const SDL_Keycode keycode);
+static void HandleStateGameOver(const SDL_Keycode keycode);
+static void Reset(void);
 static void DrawScore(void);
-static void DrawVictoryDefeat(void);
+static void DrawGameOver(void);
 
-// Initialise game board and the snake
+// Public functions
+
+// "Constructor"
+// Initialise all data
+// Reset game to base state
 void GameInitialise(void)
 {
     MenuInitialise(cStateMenu);
     state       = cStateMenu;
-    GameReset();
+    Reset();
 }
 
-// Free gameboard and snake resources
+// "Destructor"
+// Free all resources
 void GameFree(void)
 {
     BoardFree();
@@ -59,11 +64,12 @@ void GameFree(void)
     MenuFree();
 }
 
-// Run the game until exit event is triggered
+// Main game loop
+// Process input and handle different game states
+// Exit function when state is 'exit'
 void GameRun(void)
 {
     double currentTime = SDL_GetTicks();
-    SDL_Keycode keycode = SDLK_UNKNOWN;
 
     while(state != cStateExit)
     {
@@ -73,47 +79,45 @@ void GameRun(void)
         timer += newTime - currentTime;
         currentTime = newTime;
 
-        GetInput(&keycode);
-        switch(state)
+        // Handle the current state and change state if needed
+        const SDL_Keycode KEY_CODE = GetInput();
+        if(state == cStateMenu || state == cStatePause)
         {
-            case cStateMenu:
-            case cStatePause:
-                GameStateMenu(keycode);
-                break;
-
-            case cStatePlay:
-                GameStatePlay(keycode);
-                break;
-
-            case cStateVictory:
-            case cStateDefeat:
-                GameVictoryDefeat(keycode);
-                break;
-
-            case cStateExit:
-                return;
-
-            default:
-                break;
+            HandleStateMenu(KEY_CODE);
         }
+        else if(state == cStatePlay)
+        {
+            HandleStatePlay(KEY_CODE);
+        }
+        else if(state == cStateVictory || state == cStateDefeat)
+        {
+            HandleStateGameOver(KEY_CODE);
+        }
+
+        // Other states can invoke exit
         if(state == cStateExit)
         {
             return;
         }
 
+        // Render the relevant game elements
         if(state != cStateMenu)
         {
             DrawScore();
             BoardDraw();
             SnakeDraw();
+            if(state == cStatePause)
+            {
+                MenuDraw();
+            }
+            else if(state == cStateVictory || state == cStateDefeat)
+            {
+                DrawGameOver();
+            }
         }
-        if(state == cStateMenu || state == cStatePause)
+        else
         {
             MenuDraw();
-        }
-        if(state == cStateVictory || state == cStateDefeat)
-        {
-            DrawVictoryDefeat();
         }
 
         RendererDraw();
@@ -125,40 +129,38 @@ void GameRun(void)
 // If exit event, set the internal state to 'exit'
 // If a valid keyboard input (keydown), set
 //   the pKeyCode and return
-static void GetInput(SDL_Keycode * pKeycode)
+static SDL_Keycode GetInput(void)
 {
-    *pKeycode = SDLK_UNKNOWN;
-
     SDL_Event e;
     while(SDL_PollEvent(&e))
     {
         if(e.type == SDL_QUIT)
         {
             state = cStateExit;
-            return;
+            return SDLK_UNKNOWN;
         }
         else if(e.type == SDL_KEYDOWN)
         {
-            *pKeycode = e.key.keysym.sym;
-            return;
+            return e.key.keysym.sym;
         }
     }
+    return SDLK_UNKNOWN;
 }
 
 // Update the menu object
 // If the menu type does not match the game state
 // Change the menu type before updating
-static void GameStateMenu(const SDL_Keycode keycode)
+static void HandleStateMenu(const SDL_Keycode keycode)
 {
-    GameState oldState = state;
+    const GameState OLD_STATE = state;
     if(MenuGetType() != state)
     {
         MenuSetType(state);
     }
     MenuUpdate(keycode, &state);
-    if(oldState == cStateMenu && state == cStatePlay)
+    if(OLD_STATE == cStateMenu && state == cStatePlay)
     {
-        GameReset();
+        Reset();
     }
 }
 
@@ -167,24 +169,24 @@ static void GameStateMenu(const SDL_Keycode keycode)
 // movement (if needed)
 // Snake's logic is only updated according to the speed value
 // eg. speed 1 = 1 fps, speed 10 = 10 fps
-static void GameStatePlay(const SDL_Keycode keycode)
+static void HandleStatePlay(const SDL_Keycode keycode)
 {
     switch(keycode)
     {
         case SDLK_UP:
-            SnakeChangeDirection(cDirectionUp);
+            SnakeSetDirection(cDirectionUp);
             break;
 
         case SDLK_DOWN:
-            SnakeChangeDirection(cDirectionDown);
+            SnakeSetDirection(cDirectionDown);
             break;
 
         case SDLK_LEFT:
-            SnakeChangeDirection(cDirectionLeft);
+            SnakeSetDirection(cDirectionLeft);
             break;
 
         case SDLK_RIGHT:
-            SnakeChangeDirection(cDirectionRight);
+            SnakeSetDirection(cDirectionRight);
             break;
 
         case SDLK_ESCAPE:
@@ -201,88 +203,66 @@ static void GameStatePlay(const SDL_Keycode keycode)
             break;
     }
 
-    if(!SnakeIsActive() || (state == cStateVictory || state == cStateDefeat) || timer < (1.0 / SnakeGetSpeed()) * 1000)
+    // Snake has its own framerate
+    if(!SnakeIsActive() || timer < (1.0 / SnakeGetSpeed()) * 1000)
     {
         return;
     }
     timer = 0.0;
-    const BOOL HAS_DIRECTION_CHANGED = SnakeUpdateDirection();
 
-    Point snakeNextPos;
-    SnakeGetNextPos(&snakeNextPos);
+    const BOOL  HAS_DIRECTION_CHANGED = SnakeUpdateDirection();
+    const Point NEXT_HEAD_POINT = SnakeGetNextHeadPoint();
 
-    const Celltype NEXT_CELL = BoardGetCell(snakeNextPos.x, snakeNextPos.y);
-    const BOOL IS_ABOUT_TO_LOSE = !HAS_DIRECTION_CHANGED && ((NEXT_CELL == cTypeSnake) || ( (snakeNextPos.x < 0 || snakeNextPos.x >= BOARD_WIDTH) || (snakeNextPos.y < 0 || snakeNextPos.y >= BOARD_HEIGHT) ));
-
-    // Handle the "warning" period
-    if( IS_ABOUT_TO_LOSE && warningFrames++ < WARNING_FRAMES_ALLOWANCE)
+    // Check if snake is about to lose, but ignore if next head position is
+    // tail, as the tail will move out of the way
+    if(!BoardIsCellValid(NEXT_HEAD_POINT) && !PointsAreEqual(NEXT_HEAD_POINT, SnakeGetTail()->point))
     {
+        // If we haven't changed the snake's direction and still have
+        // warning frame allowance, use that and return
+        if(!HAS_DIRECTION_CHANGED && warningFrames++ < WARNING_FRAMES_ALLOWANCE)
+        {
+            return;
+        }
+
+        // Snake lost. Change state and return
+        // We're not updating the position to make it look better
+        state = cStateDefeat;
         return;
     }
-    warningFrames = 0;
+    warningFrames = 0; // Reset warning frames
 
     // If snake has just eaten, the board state and snake might be out of sync
     // causing the food to spawn on the snake's tail
     // Only update the tail if snake has NOT eaten
     if(SnakeGetLength() == snakeLength)
     {
-        const Point TAIL_POINT = SnakeGetTail()->point;
-        BoardSetCell(TAIL_POINT.x, TAIL_POINT.y, cTypeFree);
+        BoardSetCell(SnakeGetTail()->point, cTypeFree);
     }
     else
     {
         snakeLength = SnakeGetLength();
     }
 
+    // Update the snake's position and maybe handle food
     SnakeMove();
     const Point HEAD_POINT = SnakeGetHead()->point;
-    const Celltype CELL = BoardGetCell(HEAD_POINT.x, HEAD_POINT.y);
     BOOL newFood = FALSE;
 
-    if(CELL == cTypeFood)
+    if(BoardGetCell(HEAD_POINT) == cTypeFood)
     {
         SnakeAddBodyPart();
         newFood = TRUE;
         score += 5;
     }
-    else if(CELL == cTypeSnake || !SnakeInBounds())
-    {
-        state = cStateDefeat;
-    }
-    BoardSetCell(HEAD_POINT.x, HEAD_POINT.y, cTypeSnake);
-    if(newFood && !BoardGenerateFood(SnakeGetLength()))
+    BoardSetCell(HEAD_POINT, cTypeSnake);
+    if(newFood && !BoardGenerateFood())
     {
         state = cStateVictory;
     }
 }
 
-// Reset board and game data
-static void GameReset(void)
-{
-    BoardFree();
-    SnakeFree();
-
-    BoardInitialise();
-
-    Point initPoint;
-    BoardGetMidPoint(&initPoint);
-
-    SnakeInitialise(initPoint, SNAKE_INIT_LENGTH);
-
-    SnakePart * pCurrent = NULL;
-    for(pCurrent = SnakeGetHead(); pCurrent; pCurrent = pCurrent->pNext)
-    {
-        BoardSetCell(pCurrent->point.x, pCurrent->point.y, cTypeSnake);
-    }
-    BoardGenerateFood(SNAKE_INIT_LENGTH);
-
-    snakeLength = SnakeGetLength();
-    timer       = 0.0;
-    score       = 0;
-    warningFrames = 0;
-}
-
-static void GameVictoryDefeat(const SDL_Keycode keycode)
+// Handle game over state (either victory or loss)
+static void HandleStateGameOver(const SDL_Keycode keycode)
 {
     if(keycode == SDLK_RETURN || keycode == SDLK_ESCAPE)
     {
@@ -290,25 +270,31 @@ static void GameVictoryDefeat(const SDL_Keycode keycode)
     }
 }
 
-static void DrawVictoryDefeat(void)
+// Reset board and game data
+static void Reset(void)
 {
-    SDL_Color colour;
-    colour.r = 255;
-    colour.g = 255;
-    colour.b = 255;
+    BoardFree();
+    SnakeFree();
 
-    int windowWidth = 0;
-    int windowHeight = 0;
-    RendererGetWindowSize(&windowWidth, &windowHeight);
+    BoardInitialise();
 
-    char * pMainText = (state == cStateVictory) ? "VICTORY" : "DEFEAT";
-    RendererDrawText(pMainText, colour, windowWidth / 2, windowHeight / 4, FALSE);
+    const Point INITIAL_POINT = { BOARD_WIDTH / 2, BOARD_HEIGHT / 2 };
+    SnakeInitialise(INITIAL_POINT, SNAKE_INIT_LENGTH);
 
-    char * pPromptText = "Press <Enter> or <Escape> to continue";
-    RendererDrawText(pPromptText, colour, windowWidth / 2, windowHeight, FALSE);
+    SnakePart * pCurrent = NULL;
+    for(pCurrent = SnakeGetHead(); pCurrent; pCurrent = pCurrent->pNext)
+    {
+        BoardSetCell(pCurrent->point, cTypeSnake);
+    }
+    BoardGenerateFood();
+
+    snakeLength = SnakeGetLength();
+    timer       = 0.0;
+    score       = 0;
+    warningFrames = 0;
 }
 
-// Draw the current score in the top-left corner
+// Draw the score component
 static void DrawScore(void)
 {
     // We want to pad the score to look like this (0005)
@@ -329,4 +315,23 @@ static void DrawScore(void)
     colour.g = 255;
     colour.b = 255;
     RendererDrawText(text, colour, windowWidth / 2, windowHeight / 8, FALSE);
+}
+
+// Draw game over components
+static void DrawGameOver(void)
+{
+    SDL_Color colour;
+    colour.r = 255;
+    colour.g = 255;
+    colour.b = 255;
+
+    int windowWidth = 0;
+    int windowHeight = 0;
+    RendererGetWindowSize(&windowWidth, &windowHeight);
+
+    char * pMainText = (state == cStateVictory) ? "VICTORY" : "DEFEAT";
+    RendererDrawText(pMainText, colour, windowWidth / 2, windowHeight / 4, FALSE);
+
+    char * pPromptText = "Press <Enter> or <Escape> to continue";
+    RendererDrawText(pPromptText, colour, windowWidth / 2, windowHeight, FALSE);
 }

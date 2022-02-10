@@ -21,22 +21,23 @@ struct SnakePart
     struct SnakePart * pPrev;
     struct SnakePart * pNext;
 };
-
 typedef struct SnakePart SnakePart;
 
+// Main functions
 void SnakeInitialise(Point initialPoint, const ushort initialLength);
 void SnakeFree(void);
 void SnakeMove(void);
-void SnakeChangeDirection(const Direction newDirection);
+void SnakeSetDirection(const Direction newDirection);
 void SnakeAddBodyPart(void);
 void SnakeDraw(void);
+
+// Helper functions
 ushort SnakeGetLength(void);
 SnakePart * SnakeGetHead(void);
 SnakePart * SnakeGetTail(void);
 ushort SnakeGetSpeed(void);
 BOOL SnakeIsActive(void);
-BOOL SnakeInBounds(void);
 BOOL SnakeUpdateDirection(void);
-void SnakeGetNextPos(Point * pNewPoint);
+Point SnakeGetNextHeadPoint(void);
 
 #endif // !SNAKE_H

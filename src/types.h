@@ -39,4 +39,19 @@ typedef struct
     int y;
 } Point;
 
+// Compare two points
+// Return TRUE if both are equal
+static inline BOOL PointsAreEqual(const Point l, const Point r)
+{
+    return (l.x == r.x && l.y == r.y);
+}
+
+// RGB struct
+typedef struct
+{
+    uchar r;
+    uchar g;
+    uchar b;
+} RGB;
+
 #endif // !TYPES_H

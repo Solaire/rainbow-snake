@@ -1,36 +1,28 @@
 #include "snake.h"
+
 #include "globals.h"
 #include "renderer.h"
 
-// RGB struct
-typedef struct
-{
-    uchar r;
-    uchar g;
-    uchar b;
-} RGB;
-
 // Internal variables
-static Direction direction;
-static Direction tempDirection;
+static Direction directions[2];
+static RGB colourArr[SNAKE_COLOUR_COUNT];
+
 static ushort length;
 static ushort speed;
 static BOOL isActive;
-static RGB * pColourArr;
 static SnakePart * pHead;
 static SnakePart * pTail;
 
 // Internal linked-list functions
-static void SnakePartPushHead(const Point point);
-static void SnakePartPushTail(const Point point);
-static SnakePart * SnakePartPopHead(void);
-static SnakePart * SnakePartPopTail(void);
-static unsigned short SnakePartLength(void);
-static void SnakePartFree(void);
-static BOOL SnakePartIsEmpty(void);
 
-// Create new SnakePart node with specified point
-// Set new head pointer
+// Return TRUE if head pointer is NULL
+static inline BOOL SnakePartIsEmpty(void)
+{
+    return !pHead;
+}
+
+// Create a new node, with the specified point
+// and add to the front of the linked-list
 static void SnakePartPushHead(const Point point)
 {
     SnakePart * pNewHead = (SnakePart *)calloc(1, sizeof(SnakePart));
@@ -48,8 +40,8 @@ static void SnakePartPushHead(const Point point)
     pHead = pNewHead;
 }
 
-// Create new SnakePart node with specified point
-// Set new tail pointer
+// Create a new node, with the specified point
+// and add to the back of the linked-list
 static void SnakePartPushTail(const Point point)
 {
     SnakePart * pNewTail = (SnakePart *)calloc(1, sizeof(SnakePart));
@@ -67,9 +59,10 @@ static void SnakePartPushTail(const Point point)
     pTail = pNewTail;
 }
 
-// Remove the head from the linked-list
-// Set the head pointer to current head's next
-// Return the pointer to current head
+// Remove the head node from the linked-list and
+// set the next node as the head.
+// Return the pointer to old head
+//
 // NOTE: Pointer must be freed
 static SnakePart * SnakePartPopHead(void)
 {
@@ -86,9 +79,10 @@ static SnakePart * SnakePartPopHead(void)
     return pCurrentHead;
 }
 
-// Remove the tail from the linked-list
-// Set the tail pointer to current tails' previous
-// Return the pointer to current tail
+// Remove the tail node from the linked-list and
+// set the previous node as the tail.
+// Return the pointer to old tail
+//
 // NOTE: Pointer must be freed
 static SnakePart * SnakePartPopTail(void)
 {
@@ -105,19 +99,7 @@ static SnakePart * SnakePartPopTail(void)
     return pCurrentTail;
 }
 
-// Return number of nodes in the linked-list
-static unsigned short SnakePartLength(void)
-{
-    ushort snakeLength = 0;
-    SnakePart * pCurrent = NULL;
-    for(pCurrent = pHead; pCurrent; pCurrent = pCurrent->pNext)
-    {
-        snakeLength++;
-    }
-    return snakeLength;
-}
-
-// Free all linked-list nodes
+// Delete and free all nodes from the linked-list
 static void SnakePartFree(void)
 {
     SnakePart * pCurrent = NULL;
@@ -130,27 +112,10 @@ static void SnakePartFree(void)
     }
 }
 
-// Return true if linked-list is empty
-static BOOL SnakePartIsEmpty(void)
+// Calculate the rainbow colours and
+// populate the colour array
+static void SetColours(void)
 {
-    return !pHead;
-}
-
-// Create snake resources
-// Initialise the gradient array
-void SnakeInitialise(Point initialPoint, const ushort initialLength)
-{
-    // Snake resources
-    direction   = cDirectionRight;
-    tempDirection = direction;
-    length      = initialLength;
-    speed       = 1;
-    isActive    = FALSE;
-
-    pColourArr = (RGB *)calloc(SNAKE_COLOUR_COUNT, sizeof(RGB));
-    pHead      = NULL;
-    pTail      = NULL;
-
     // Create the colours
     for(ushort i = 0; i < SNAKE_COLOUR_COUNT; i++)
     {
@@ -200,10 +165,34 @@ void SnakeInitialise(Point initialPoint, const ushort initialLength)
                 rgb.b = 255 - 10 * MOD_25;
                 break;
         }
-        pColourArr[i] = rgb;
+        colourArr[i] = rgb;
     }
+}
 
-    // Add the snake parts
+// Public functions
+
+// "Constructor"
+// Set all variables to initial values
+void SnakeInitialise(Point initialPoint, const ushort initialLength)
+{
+    // Reset colour and direction queue arrays
+    memset(colourArr, 0, sizeof(colourArr));
+    directions[0] = cDirectionRight;
+    directions[1] = cDirectionRight;
+
+    // Variables
+    length   = initialLength;
+    speed    = 1;
+    isActive = FALSE;
+
+    // Linked-list nodes
+    pHead = NULL;
+    pTail = NULL;
+
+    // Populate the colour array
+    SetColours();
+
+    // Add the initial snake parts
     SnakePartPushHead(initialPoint);
     for(ushort i = 1; i < initialLength; i++)
     {
@@ -212,20 +201,16 @@ void SnakeInitialise(Point initialPoint, const ushort initialLength)
     }
 }
 
-// Free all snake resources
+// "Destructor"
+// Destroy the linked-list
 void SnakeFree(void)
 {
     SnakePartFree();
-    if(pColourArr)
-    {
-        free(pColourArr);
-        pColourArr = NULL;
-    }
     pHead = NULL;
     pTail = NULL;
 }
 
-// Update snake's position based on direction
+// Update snake's direction enum and position
 void SnakeMove(void)
 {
     if(!isActive)
@@ -242,56 +227,26 @@ void SnakeMove(void)
         free(pOldTail);
         pOldTail = NULL;
     }
-    Point newHeadPoint;
-    SnakeGetNextPos(&newHeadPoint);
-    SnakePartPushHead(newHeadPoint);
+    SnakePartPushHead(SnakeGetNextHeadPoint());
 }
 
-// Change snake's direction.
-// Ignore if new direction is opposite of current
-void SnakeChangeDirection(const Direction newDirection)
+// Set the snake's secondary direction enum
+// When SnakeMove() is called, primary direction
+// will be updated (if valid)
+//
+// Activate snake if not active
+void SnakeSetDirection(const Direction newDirection)
 {
-    tempDirection = newDirection;
+    directions[1] = newDirection;
     if(!isActive)
     {
         isActive = TRUE;
     }
 }
 
-// Determine the snake's next head position based on direction
-void SnakeGetNextPos(Point * pNewPoint)
-{
-    if(!pHead)
-    {
-        return;
-    }
-    *pNewPoint = pHead->point;
-    switch(direction)
-    {
-        case cDirectionUp:
-            pNewPoint->y--;
-            break;
-
-        case cDirectionDown:
-            pNewPoint->y++;
-            break;
-
-        case cDirectionLeft:
-            pNewPoint->x--;
-            break;
-
-        case cDirectionRight:
-            pNewPoint->x++;
-            break;
-
-        default:
-            break;
-    }
-}
-
-// Add body part to the snake
-// New node's position will be the same as the tail
-// This will delay the snake's extension by 1 frame
+// Push new tail node to the linked-list
+// The new cell will have the same point as current tail
+// Increment snake length
 void SnakeAddBodyPart(void)
 {
     SnakePartPushTail(pTail->point);
@@ -301,25 +256,23 @@ void SnakeAddBodyPart(void)
 // Draw the snake
 void SnakeDraw(void)
 {
-    ushort colour = 0;
-    SnakePart * pCurrent;
     SDL_Renderer * pRenderer = GetRenderer();
-
     int windowWidth = 0;
     int windowHeight = 0;
     RendererGetWindowSize(&windowWidth, &windowHeight);
 
     const int OFFSET_X = (windowWidth / 2) - ((BOARD_WIDTH * CELL_SIZE) / 2);
     const int OFFSET_Y = (windowHeight / 2) - ((BOARD_HEIGHT * CELL_SIZE) / 2);
+    ushort i = 0;
 
-    for(pCurrent = pHead; pCurrent; pCurrent = pCurrent->pNext)
+    for(SnakePart * pCurrent = pHead; pCurrent; pCurrent = pCurrent->pNext)
     {
         // Set the correct rainbow colour
         #define MAKE_RGB(rgb) rgb.r, rgb.g, rgb.b
-        SDL_SetRenderDrawColor(pRenderer, MAKE_RGB(pColourArr[colour]), SDL_ALPHA_OPAQUE);
+        SDL_SetRenderDrawColor(pRenderer, MAKE_RGB(colourArr[i]), SDL_ALPHA_OPAQUE);
         #undef MAKE_RGB
 
-        colour = (colour + 1) % SNAKE_COLOUR_COUNT;
+        i = (i + 1) % SNAKE_COLOUR_COUNT;
 
         // Draw this bit when the snake is longer than 1 cell
         // We have to calculate some rectangles for snake turns and stuff
@@ -413,17 +366,47 @@ BOOL SnakeIsActive(void)
     return isActive;
 }
 
-// Check if snake's head is within bounds
-BOOL SnakeInBounds(void)
-{
-    const Point HEAD_POINT = pHead->point;
-    return ( (HEAD_POINT.x >= 0 && HEAD_POINT.y >= 0) && (HEAD_POINT.x < BOARD_WIDTH && HEAD_POINT.y < BOARD_HEIGHT) );
-}
-
+// Update snake's direction from the internal queue
+// Return TRUE if direction has been updated
 BOOL SnakeUpdateDirection(void)
 {
-    if( abs((char)tempDirection - (char)direction) > 1 )
+    if( abs((char)directions[0] - (char)directions[1]) > 1 )
     {
-        direction = tempDirection;
+        directions[0] = directions[1];
+        return TRUE;
     }
+    return FALSE;
+}
+
+// Return snake's next head position
+Point SnakeGetNextHeadPoint(void)
+{
+    if(!pHead)
+    {
+        const Point EMPTY = {-1, -1};
+        return EMPTY;
+    }
+    Point nextPoint = pHead->point;
+    switch(directions[0])
+    {
+        case cDirectionUp:
+            nextPoint.y--;
+            break;
+
+        case cDirectionDown:
+            nextPoint.y++;
+            break;
+
+        case cDirectionLeft:
+            nextPoint.x--;
+            break;
+
+        case cDirectionRight:
+            nextPoint.x++;
+            break;
+
+        default:
+            break;
+    }
+    return nextPoint;
 }
