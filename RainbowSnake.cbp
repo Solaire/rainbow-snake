@@ -65,10 +65,12 @@
 				<Option type="0" />
 				<Option compiler="gcc" />
 				<Compiler>
-					<Add option="-O1" />
+					<Add option="-O3" />
+					<Add option="-Wall" />
 					<Add option="-std=c99" />
 				</Compiler>
 				<Linker>
+					<Add option="-O3" />
 					<Add option="-s" />
 					<Add library="mingw32" />
 					<Add library="SDL2main" />
@@ -82,8 +84,12 @@
 			</Target>
 		</Build>
 		<Compiler>
-			<Add option="`sdl2-config --cflags`" />
+			<Add option="-pedantic-errors" />
+			<Add option="-pedantic" />
+			<Add option="-Wextra" />
 			<Add option="-Wall" />
+			<Add option="-std=c99" />
+			<Add option="`sdl2-config --cflags`" />
 		</Compiler>
 		<Linker>
 			<Add option="`sdl2-config --libs`" />
