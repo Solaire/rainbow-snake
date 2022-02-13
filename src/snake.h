@@ -35,8 +35,6 @@ void SnakeDraw(void);
 ushort SnakeGetLength(void);
 SnakePart * SnakeGetHead(void);
 SnakePart * SnakeGetTail(void);
-ushort SnakeGetSpeed(void);
-BOOL SnakeIsActive(void);
 BOOL SnakeUpdateDirection(void);
 Point SnakeGetNextHeadPoint(void);
 

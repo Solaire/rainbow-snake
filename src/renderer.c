@@ -1,6 +1,8 @@
 #include "renderer.h"
 #include <stdio.h>
 
+#include "globals.h"
+
 // "Private" variables
 static SDL_Window * pWindow = NULL;
 static SDL_Renderer * pRenderer = NULL;
@@ -30,7 +32,7 @@ BOOL RendererInitialise(void)
     {
         goto InitialiseRenderer_error;
     }
-    pRenderer = SDL_CreateRenderer(pWindow, -1, SDL_RENDERER_ACCELERATED);
+    pRenderer = SDL_CreateRenderer(pWindow, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
     if(!pRenderer)
     {
         goto InitialiseRenderer_error;

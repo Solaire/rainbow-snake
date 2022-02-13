@@ -10,15 +10,6 @@
 #include <stdio.h>
 #include <SDL2/SDL_keyboard.h>
 
-// Enum representing snake's speed range
-// and the default game update logic rate
-typedef enum
-{
-    cSpeedMin = 1,
-    cSpeedMax = 12,
-    cRefresh  = 60
-} GameTicks;
-
 // Inspired by the old Nokia snake
 // In order to be slightly less annoying, the game will
 // essentially pause itself for specified number of frames
@@ -27,12 +18,16 @@ typedef enum
 // but on higher speeds it might be pretty insignificant
 static const uchar WARNING_FRAMES_ALLOWANCE = 1;
 
-// Internal variables
+// Internal variables for the game state
 static GameState state;
-static ushort    snakeLength;
-static double    timer;
 static ushort    score;
 static uchar     warningFrames;
+static BOOL      isActive;
+
+// Internal variables for snake-related functions
+static ushort    snakeSpeed;
+static double    snakeTimer;
+static BOOL      hasSnakeEaten;
 
 // Internal functions
 static SDL_Keycode GetInput(void);
@@ -52,6 +47,7 @@ void GameInitialise(void)
 {
     MenuInitialise(cStateMenu);
     state       = cStateMenu;
+    snakeSpeed  = MAX_SPEED / 2;
     Reset();
 }
 
@@ -76,12 +72,12 @@ void GameRun(void)
         RendererClear();
 
         double newTime = SDL_GetTicks();
-        timer += newTime - currentTime;
+        snakeTimer += newTime - currentTime;
         currentTime = newTime;
 
         // Handle the current state and change state if needed
         const SDL_Keycode KEY_CODE = GetInput();
-        if(state == cStateMenu || state == cStatePause)
+        if(state == cStateMenu || state == cStatePause || state == cStateConfig)
         {
             HandleStateMenu(KEY_CODE);
         }
@@ -101,7 +97,7 @@ void GameRun(void)
         }
 
         // Render the relevant game elements
-        if(state != cStateMenu)
+        if(state != cStateMenu && state != cStateConfig)
         {
             DrawScore();
             BoardDraw();
@@ -121,8 +117,14 @@ void GameRun(void)
         }
 
         RendererDraw();
-        SDL_Delay((1.0 / cRefresh) * 1000);
+        SDL_Delay((1.0 / FPS) * 1000);
     }
+}
+
+// Setter for snakeSpeed
+void GameSetSpeed(const uchar speed)
+{
+    snakeSpeed = speed;
 }
 
 // Get the first valid keyboard or exit input
@@ -158,9 +160,10 @@ static void HandleStateMenu(const SDL_Keycode keycode)
         MenuSetType(state);
     }
     MenuUpdate(keycode, &state);
-    if(OLD_STATE == cStateMenu && state == cStatePlay)
+    if(OLD_STATE != cStatePause && state == cStatePlay)
     {
         Reset();
+        //GameSetSpeed(6);
     }
 }
 
@@ -171,26 +174,32 @@ static void HandleStateMenu(const SDL_Keycode keycode)
 // eg. speed 1 = 1 fps, speed 10 = 10 fps
 static void HandleStatePlay(const SDL_Keycode keycode)
 {
+#define ACTIVATE do { if(!isActive) { isActive = TRUE; } } while(FALSE)
     switch(keycode)
     {
         case SDLK_UP:
             SnakeSetDirection(cDirectionUp);
+            ACTIVATE;
             break;
 
         case SDLK_DOWN:
             SnakeSetDirection(cDirectionDown);
+            ACTIVATE;
             break;
 
         case SDLK_LEFT:
             SnakeSetDirection(cDirectionLeft);
+            ACTIVATE;
             break;
 
         case SDLK_RIGHT:
             SnakeSetDirection(cDirectionRight);
+            ACTIVATE;
             break;
 
         case SDLK_ESCAPE:
             state = cStatePause;
+            MenuSetType(cStatePause);
             return;
 
 #ifdef DEBUG
@@ -202,13 +211,14 @@ static void HandleStatePlay(const SDL_Keycode keycode)
         default:
             break;
     }
+#undef ACTIVATE
 
     // Snake has its own framerate
-    if(!SnakeIsActive() || timer < (1.0 / SnakeGetSpeed()) * 1000)
+    if(!isActive || snakeTimer < (1.0 / snakeSpeed) * 1000)
     {
         return;
     }
-    timer = 0.0;
+    snakeTimer = 0.0;
 
     const BOOL  HAS_DIRECTION_CHANGED = SnakeUpdateDirection();
     const Point NEXT_HEAD_POINT = SnakeGetNextHeadPoint();
@@ -234,28 +244,27 @@ static void HandleStatePlay(const SDL_Keycode keycode)
     // If snake has just eaten, the board state and snake might be out of sync
     // causing the food to spawn on the snake's tail
     // Only update the tail if snake has NOT eaten
-    if(SnakeGetLength() == snakeLength)
+    if(!hasSnakeEaten)
     {
         BoardSetCell(SnakeGetTail()->point, cTypeFree);
     }
     else
     {
-        snakeLength = SnakeGetLength();
+        hasSnakeEaten = FALSE;
     }
 
     // Update the snake's position and maybe handle food
     SnakeMove();
     const Point HEAD_POINT = SnakeGetHead()->point;
-    BOOL newFood = FALSE;
 
     if(BoardGetCell(HEAD_POINT) == cTypeFood)
     {
         SnakeAddBodyPart();
-        newFood = TRUE;
         score += 5;
+        hasSnakeEaten = TRUE;
     }
     BoardSetCell(HEAD_POINT, cTypeSnake);
-    if(newFood && !BoardGenerateFood())
+    if(hasSnakeEaten && !BoardGenerateFood())
     {
         state = cStateVictory;
     }
@@ -267,6 +276,7 @@ static void HandleStateGameOver(const SDL_Keycode keycode)
     if(keycode == SDLK_RETURN || keycode == SDLK_ESCAPE)
     {
         state = cStateMenu;
+        MenuSetType(cStateMenu);
     }
 }
 
@@ -288,10 +298,13 @@ static void Reset(void)
     }
     BoardGenerateFood();
 
-    snakeLength = SnakeGetLength();
-    timer       = 0.0;
     score       = 0;
     warningFrames = 0;
+    isActive    = FALSE;
+
+    // snakeSpeed = 1; // Use GameSetSpeed() function
+    snakeTimer = 0.0;
+    hasSnakeEaten = FALSE;
 }
 
 // Draw the score component

@@ -2,13 +2,22 @@
 
 #include "renderer.h"
 #include "globals.h"
+#include "game.h"
 
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_rect.h>
 
+#include <math.h>
+#include <stdio.h>
+
 // Shared constants
-#define STRING_TABLE_LENGTH 4
-#define MAX_STRING_LENGTH 10
+#define STRING_TABLE_LENGTH 6
+#define MAX_STRING_LENGTH 15
+
+// TODO:
+// The difficulty setting is a little bolted-on
+// In the future if there are more settings,
+// I should try to separate config from menu
 
 // Structure defining a single element
 typedef struct
@@ -16,6 +25,7 @@ typedef struct
     char displayName[25];
     SDL_Rect area;
     GameState state;
+    ushort    value;
 } MenuElement;
 
 // Internal variables
@@ -37,7 +47,9 @@ static const char MENU_STRING_TABLE[STRING_TABLE_LENGTH][MAX_STRING_LENGTH] =
     "PLAY",
     "EXIT",
     "MAIN MENU",
-    "CONTINUE"
+    "CONTINUE",
+    "DIFFICULTY",
+    "BACK"
 };
 
 // Enum of index to string in the string table
@@ -46,24 +58,28 @@ typedef enum
     cStringPlay,
     cStringExit,
     cStringMainMenu,
-    cStringContinue
+    cStringContinue,
+    cStringDifficulty,
+    cStringBack
 } StringIndex;
 
-// Main menu strings
+// Maun menu
+// String indexes
 static const StringIndex MAIN_MENU_STRINGS[] =
 {
     cStringPlay,
     cStringExit
 };
 
-// Main menu states
+// Element states
 static const GameState MAIN_MENU_STATES[] =
 {
-    cStatePlay,
+    cStateConfig,
     cStateExit
 };
 
-// Pause menu strings
+// Pause menu
+// String indexes
 static const StringIndex PAUSE_MENU_STRINGS[] =
 {
     cStringContinue,
@@ -71,11 +87,28 @@ static const StringIndex PAUSE_MENU_STRINGS[] =
     cStringExit
 };
 
-// Main menu states
+// Element states
 static const GameState PAUSE_MENU_STATES[] =
 {
     cStatePlay,
     cStateMenu,
+    cStateExit
+};
+
+// Config menu
+// String indexes
+static const StringIndex CONFIG_MENU_STRINGS[] =
+{
+    cStringDifficulty,
+    cStringPlay,
+    cStringExit
+};
+
+// Element states
+static const GameState CONFIG_MENU_STATES[] =
+{
+    cStateValue,
+    cStatePlay,
     cStateExit
 };
 
@@ -123,9 +156,29 @@ BOOL MenuUpdate(const SDL_Keycode keycode, GameState * pState)
             currentSelection = (currentSelection + 1) % currentCount;
             break;
 
+        case SDLK_LEFT:
+            if(pElementArr[currentSelection].state == cStateValue)
+            {
+                pElementArr[currentSelection].value = fmax(--pElementArr[currentSelection].value, MIN_SPEED);
+                GameSetSpeed(pElementArr[currentSelection].value);
+            }
+            break;
+
+        case SDLK_RIGHT:
+            if(pElementArr[currentSelection].state == cStateValue)
+            {
+                pElementArr[currentSelection].value = fmin(++pElementArr[currentSelection].value, MAX_SPEED);
+                GameSetSpeed(pElementArr[currentSelection].value);
+            }
+            break;
+
         case SDLK_RETURN:
-            *pState = pElementArr[currentSelection].state;
-            return TRUE;
+            if(pElementArr[currentSelection].state != cStateValue)
+            {
+                *pState = pElementArr[currentSelection].state;
+                return TRUE;
+            }
+            break;
 
         default:
             break;
@@ -194,7 +247,17 @@ void MenuDraw(void)
         colour.g = (i == currentSelection) ? 0 : 255;
         colour.b = (i == currentSelection) ? 0 : 255;
         colour.a = SDL_ALPHA_OPAQUE;
-        RendererDrawText(pElementArr[i].displayName, colour, pElementArr[i].area.x, pElementArr[i].area.y, FALSE);
+        if(pElementArr[i].state == cStateValue)
+        {
+            char tmp[30];
+            memset(tmp, '\0', sizeof(tmp));
+            snprintf(tmp, 30, "<-- %s: %d -->", pElementArr[i].displayName, pElementArr[i].value);
+            RendererDrawText(tmp, colour, pElementArr[i].area.x, pElementArr[i].area.y, FALSE);
+        }
+        else
+        {
+            RendererDrawText(pElementArr[i].displayName, colour, pElementArr[i].area.x, pElementArr[i].area.y, FALSE);
+        }
     }
 }
 
@@ -230,6 +293,13 @@ static void InitialiseMenuElements(void)
             strcpy(menuTitle, "Pause\0");
         break;
 
+        case cStateConfig:
+            pMenuStrings = CONFIG_MENU_STRINGS;
+            pMenuStates   = CONFIG_MENU_STATES;
+            menuElementCount = ARRAY_SIZE(CONFIG_MENU_STRINGS);
+            strcpy(menuTitle, "Settings\0");
+        break;
+
         default:
             return;
     }
@@ -243,6 +313,7 @@ static void InitialiseMenuElements(void)
 	for(int i = 0; i < menuElementCount; i++, y += 100)
     {
         MenuElement el;
+        el.value = MAX_SPEED / 2;
         memset(el.displayName, '\0', sizeof(el.displayName));
         strcpy(el.displayName, MENU_STRING_TABLE[(int)pMenuStrings[i]]);
 

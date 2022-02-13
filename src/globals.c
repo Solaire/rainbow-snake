@@ -5,6 +5,8 @@ const ushort CELL_SIZE    = 30;
 
 // Game definitions
 const double FPS = 60.0;
+const char MIN_SPEED = 1;
+const char MAX_SPEED = 12;
 
 // Snake colour/gradient count
 const ushort SNAKE_GRADIENT_LENGTH = 25;

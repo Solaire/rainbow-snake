@@ -28,6 +28,8 @@ typedef enum
     cStateVictory   = 3,
     cStateDefeat    = 4,
     cStateExit      = 5,
+    cStateConfig    = 6,
+    cStateValue     = 99,
 } GameState;
 
 // Shared structures

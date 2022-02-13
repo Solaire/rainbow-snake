@@ -7,9 +7,6 @@
 static Direction directions[2];
 static RGB colourArr[SNAKE_COLOUR_COUNT];
 
-static ushort length;
-static ushort speed;
-static BOOL isActive;
 static SnakePart * pHead;
 static SnakePart * pTail;
 
@@ -180,11 +177,6 @@ void SnakeInitialise(Point initialPoint, const ushort initialLength)
     directions[0] = cDirectionRight;
     directions[1] = cDirectionRight;
 
-    // Variables
-    length   = initialLength;
-    speed    = 1;
-    isActive = FALSE;
-
     // Linked-list nodes
     pHead = NULL;
     pTail = NULL;
@@ -213,10 +205,6 @@ void SnakeFree(void)
 // Update snake's direction enum and position
 void SnakeMove(void)
 {
-    if(!isActive)
-    {
-        return;
-    }
     SnakeUpdateDirection();
 
     // No point updating the whole snake.
@@ -238,10 +226,6 @@ void SnakeMove(void)
 void SnakeSetDirection(const Direction newDirection)
 {
     directions[1] = newDirection;
-    if(!isActive)
-    {
-        isActive = TRUE;
-    }
 }
 
 // Push new tail node to the linked-list
@@ -250,7 +234,6 @@ void SnakeSetDirection(const Direction newDirection)
 void SnakeAddBodyPart(void)
 {
     SnakePartPushTail(pTail->point);
-    length++;
 }
 
 // Draw the snake
@@ -336,12 +319,6 @@ void SnakeDraw(void)
     }
 }
 
-// Return the snake's length
-ushort SnakeGetLength(void)
-{
-    return length;
-}
-
 // Return the pointer to the head node
 SnakePart * SnakeGetHead(void)
 {
@@ -352,18 +329,6 @@ SnakePart * SnakeGetHead(void)
 SnakePart * SnakeGetTail(void)
 {
     return pTail;
-}
-
-// Return snake's speed
-ushort SnakeGetSpeed(void)
-{
-    return speed;
-}
-
-// Return snake's active flag
-BOOL SnakeIsActive(void)
-{
-    return isActive;
 }
 
 // Update snake's direction from the internal queue

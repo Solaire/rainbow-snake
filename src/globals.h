@@ -10,6 +10,8 @@ extern const ushort CELL_SIZE;
 
 // Game definitions
 extern const double FPS;
+extern const char MIN_SPEED;
+extern const char MAX_SPEED;
 
 // Snake colour/gradient count
 #define SNAKE_COLOUR_COUNT 150
