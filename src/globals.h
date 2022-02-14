@@ -4,7 +4,7 @@
 #include "types.h"
 
 // Game area dimensions
-#define BOARD_WIDTH 10
+#define BOARD_WIDTH 15
 #define BOARD_HEIGHT 10
 extern const ushort CELL_SIZE;
 

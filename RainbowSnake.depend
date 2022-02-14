@@ -36,7 +36,7 @@
 	"renderer.h"
 	"game.h"
 
-1644621918 source:c:\dev\rainbowsnake\src\game.c
+1644775123 source:c:\dev\rainbowsnake\src\game.c
 	"game.h"
 	"renderer.h"
 	"board.h"
@@ -66,7 +66,7 @@
 	<math.h>
 	<stdio.h>
 
-1644601584 c:\dev\rainbowsnake\src\globals.h
+1644867741 c:\dev\rainbowsnake\src\globals.h
 	"types.h"
 
 1644621022 c:\dev\rainbowsnake\src\renderer.h
