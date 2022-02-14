@@ -25,7 +25,7 @@ The game has been written using Code::Blocks IDE and both Windows and Linux have
 
 ## Contributing
 You can support the project in the following ways:
-- Go to [Issues](/Solaire/RainbowSnake/issues) to identify bugs or make suggestions;
+- Go to [Issues](https://github.com/Solaire/RainbowSnake/issues) to identify bugs or make suggestions;
 - Fork the repo, make some changes, and submit a pull request.
 
 ## [License](LICENSE)
