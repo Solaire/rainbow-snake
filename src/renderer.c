@@ -43,7 +43,7 @@ BOOL RendererInitialise(void)
         goto InitialiseRenderer_error;
     }
 
-    pFont = TTF_OpenFont("font.ttf", 64);
+    pFont = TTF_OpenFont("font.ttf", 32);
     if(!pFont)
     {
         goto InitialiseRenderer_error;

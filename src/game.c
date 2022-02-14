@@ -327,6 +327,7 @@ static void DrawScore(void)
     colour.r = 255;
     colour.g = 255;
     colour.b = 255;
+    colour.a = SDL_ALPHA_OPAQUE;
     RendererDrawText(text, colour, windowWidth / 2, windowHeight / 8, FALSE);
 }
 
@@ -337,6 +338,7 @@ static void DrawGameOver(void)
     colour.r = 255;
     colour.g = 255;
     colour.b = 255;
+    colour.a = SDL_ALPHA_OPAQUE;
 
     int windowWidth = 0;
     int windowHeight = 0;

@@ -310,7 +310,7 @@ static void InitialiseMenuElements(void)
 
     int y = (windowHeight / 2);
 
-	for(int i = 0; i < menuElementCount; i++, y += 100)
+	for(int i = 0; i < menuElementCount; i++, y += 50)
     {
         MenuElement el;
         el.value = MAX_SPEED / 2;
