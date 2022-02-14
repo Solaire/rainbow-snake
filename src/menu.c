@@ -283,7 +283,7 @@ static void InitialiseMenuElements(void)
             pMenuStrings = MAIN_MENU_STRINGS;
             pMenuStates   = MAIN_MENU_STATES;
             menuElementCount = ARRAY_SIZE(MAIN_MENU_STRINGS);
-            strcpy(menuTitle, "Snake\0");
+            strcpy(menuTitle, "Rainbow Snake\0");
             break;
 
         case cStatePause:
